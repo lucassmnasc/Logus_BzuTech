@@ -44,3 +44,11 @@ p{
 .ponto{color:var(--roxo)}
 
 @media (max-width:1000px){.nav-items{display:none}}
+
+body p,
+.hero p,
+.passo p,
+.passos-sub {
+  font-weight: 200 !important;
+  -webkit-font-smoothing: antialiased;
+}
