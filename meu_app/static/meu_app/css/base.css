@@ -13,7 +13,7 @@ button{font-family:inherit}
 /* navbar */
 .navbar{position:relative;z-index:5;display:flex;align-items:center;gap:34px;
   padding:15px clamp(16px,7.8vw,113px);background:var(--nav)}
-.logo img{display:block;width:105px;height:63px}
+.logo img{display:block;width:auto;height:63px}
 .nav-items{display:flex;gap:26px;padding:19px 23px;border-radius:97px;backdrop-filter:blur(14px);
   font-weight:700;font-size:13.6px;letter-spacing:-.34px;color:var(--lilas);white-space:nowrap}
 .nav-items a:hover{color:#f3d9fa}
