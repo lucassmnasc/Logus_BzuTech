@@ -147,7 +147,8 @@
 }
 
 .cta {
-  margin: 40px auto 0;
+  /* Distribuímos o espaço igualmente: 112px em cima e 112px embaixo */
+  margin: 112px auto; 
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -167,7 +168,8 @@
 
 .faixa {
   height: 190px;
-  margin-top: 184px;
+  /* Removemos a margem daqui, pois o espaço agora é dado pela margem inferior da .cta */
+  margin-top: 0; 
   background: var(--roxo-badge);
 }
 
