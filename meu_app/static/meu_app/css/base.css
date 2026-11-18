@@ -54,8 +54,9 @@ p {
   z-index: 5;
   display: flex;
   align-items: center;
-  gap: 34px;
-  padding: 15px clamp(16px, 7.8vw, 113px);
+  justify-content: space-between; /* Distribui os 3 elementos (Logo, Links e Botão) uniformemente */
+  gap: 20px; /* Gap menor apenas como segurança para telas muito apertadas */
+  padding: 15px clamp(20px, 5vw, 80px); /* Ajustado para não achatar em zooms maiores */
   background: var(--nav);
 }
 
@@ -83,7 +84,8 @@ p {
 }
 
 .navbar .btn-sm {
-  margin-left: auto;
+  /* Substituímos o margin-left: auto; por 0 para deixar o flexbox fazer o alinhamento */
+  margin-left: 0; 
 }
 
 /* botões */
