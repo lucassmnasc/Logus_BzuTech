@@ -20,6 +20,11 @@
   }
 
   function quadro(t) {
+    // Verifica se o canvas está com tamanho diferente da janela e corrige na hora
+    if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+    }
     ctx.clearRect(0, 0, w, h);
     const alcance = 170;
     for (let i = 0; i < nos.length; i++) {
