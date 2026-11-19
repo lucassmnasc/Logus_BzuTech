@@ -48,7 +48,19 @@
     if (!reduzir) requestAnimationFrame(quadro);
   }
 
-  addEventListener('resize', iniciar);
+  window.addEventListener('resize', () => {
+    // 1. Atualize as variáveis de limite usadas no código (w e h)
+    w = window.innerWidth;
+    h = window.innerHeight;
+    
+    // 2. Atualize as dimensões reais do elemento HTML <canvas>
+    // (substitua 'canvas' pelo nome da variável que seleciona o seu <canvas> no DOM, ex: const canvas = document.getElementById('...'))
+    canvas.width = w;
+    canvas.height = h;
+    
+    // 3. Recarregue as partículas
+    iniciar();
+  });
   iniciar();
   requestAnimationFrame(quadro);
 })();
