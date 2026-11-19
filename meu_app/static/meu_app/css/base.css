@@ -73,7 +73,7 @@ p {
   gap: 26px;
   padding: 19px 23px;
   border-radius: 97px;
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(8px);
   font-weight: 700;
   font-size: 13.6px;
   letter-spacing: -0.34px;
@@ -145,7 +145,8 @@ p {
 .glass {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 33px;
-  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
 .container {
