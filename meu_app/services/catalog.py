@@ -177,6 +177,26 @@ SEGMENTOS: Dict[str, Dict[str, Any]] = {
 }
 
 
+# Modo/regime de operação: quanto mais horas de operação, maior o desperdício evitável capturado pelo IoT.
+MODOS_OPERACAO: Dict[str, Dict[str, Any]] = {
+    "comercial": {
+        "rotulo": "Horário comercial (até 10h/dia)",
+        "horas_dia": 10,
+        "multiplicador_economia": 1.0,
+    },
+    "dois-turnos": {
+        "rotulo": "Dois turnos (até 16h/dia)",
+        "horas_dia": 16,
+        "multiplicador_economia": 1.2,
+    },
+    "continuo": {
+        "rotulo": "Operação contínua 24/7",
+        "horas_dia": 24,
+        "multiplicador_economia": 1.4,
+    },
+}
+
+
 def listar_dispositivos() -> List[Dict[str, Any]]:
     """Retorna a lista de dispositivos do catálogo Bzu Tech."""
     return list(DISPOSITIVOS_BZU.values())

@@ -15,8 +15,27 @@ from .catalog import (
     DISPOSITIVOS_BZU,
     DISPOSITIVOS_POR_GATEWAY,
     FATOR_COLETA,
+    MODOS_OPERACAO,
     SEGMENTOS,
 )
+from .extracao import extrair_parametros_mensagem, parse_valor_monetario
+
+
+def _normalizar_modo(modo: Optional[str]) -> str:
+    if not modo:
+        return "comercial"
+    m = str(modo).strip().lower()
+    if m in MODOS_OPERACAO:
+        return m
+    if any(k in m for k in ("24", "contin", "contín", "inint", "3 turn", "três", "tres")):
+        return "continuo"
+    if any(k in m for k in ("2 turn", "dois", "16")):
+        return "dois-turnos"
+    return "comercial"
+
+
+def _texto_limpo(valor: Any, limite: int = 150) -> str:
+    return str(valor or "").strip()[:limite]
 
 
 def _normalizar_segmento(segmento: Optional[str]) -> str:
@@ -185,6 +204,14 @@ def analisar_operacao(dados: Dict[str, Any]) -> Dict[str, Any]:
       - principal_dor (str): energia, paradas, frota, visibilidade, produtividade
       - empresa (str): nome da empresa do investidor
     """
+    # Se o usuário descreveu a operação em texto livre, extrai parâmetros dela.
+    # Campos preenchidos explicitamente no formulário têm prioridade.
+    descricao_operacao = _texto_limpo(dados.get("descricao_operacao"), 2000)
+    if descricao_operacao:
+        extraidos = extrair_parametros_mensagem(descricao_operacao, {})
+        explicitos = {k: v for k, v in dados.items() if v not in (None, "")}
+        dados = {**extraidos, **explicitos}
+
     raw_qtd = dados.get("qtd_dispositivos", dados.get("dispositivos", 80))
     try:
         qtd_dispositivos = max(1, min(2000, int(float(raw_qtd))))
@@ -193,23 +220,27 @@ def analisar_operacao(dados: Dict[str, Any]) -> Dict[str, Any]:
 
     segmento_key = _normalizar_segmento(dados.get("segmento"))
     coleta_key = _normalizar_coleta(dados.get("coleta_atual", dados.get("coleta")))
+    modo_key = _normalizar_modo(dados.get("modo_operacao"))
     endpoint_pref = _normalizar_endpoint(dados.get("endpoint_preferido", dados.get("endpoint")))
-    principal_dor = (dados.get("principal_dor") or "").strip()
+    principal_dor = _texto_limpo(dados.get("principal_dor"), 60)
+    empresa = _texto_limpo(dados.get("empresa"))
+    responsavel = _texto_limpo(dados.get("responsavel") or dados.get("nome"))
+    cidade = _texto_limpo(dados.get("cidade"), 80)
 
     def _to_float(val: Any) -> Optional[float]:
-        if val in (None, "", 0, "0"):
+        if val in (None, ""):
             return None
-        try:
-            num = float(str(val).replace("R$", "").replace(".", "").replace(",", ".").strip())
-            return num if num > 0 else None
-        except ValueError:
-            return None
+        if isinstance(val, (int, float)):
+            return float(val) if val > 0 else None
+        num = parse_valor_monetario(str(val).replace("R$", ""))
+        return num if num and num > 0 else None
 
     custo_energia_mensal = _to_float(dados.get("custo_energia_mensal"))
     custo_manutencao_mensal = _to_float(dados.get("custo_manutencao_mensal"))
 
     seg_info = SEGMENTOS[segmento_key]
     coleta_info = FATOR_COLETA[coleta_key]
+    modo_info = MODOS_OPERACAO[modo_key]
     pacote = _definir_pacote(qtd_dispositivos)
 
     mix = _sugerir_mix_dispositivos(
@@ -251,7 +282,11 @@ def analisar_operacao(dados: Dict[str, Any]) -> Dict[str, Any]:
     reducao_paradas_pct = min(45.0, soma_red_paradas / qtd_dispositivos)
 
     # Economia mensal: combina dados reais informados pelo cliente (se houver) com o benchmark por dispositivo
-    multiplicador = seg_info["multiplicador_economia"] * coleta_info["multiplicador_economia"]
+    multiplicador = (
+        seg_info["multiplicador_economia"]
+        * coleta_info["multiplicador_economia"]
+        * modo_info["multiplicador_economia"]
+    )
     economia_mensal_benchmark = economia_mensal_padrao * multiplicador
 
     if custo_energia_mensal or custo_manutencao_mensal:
@@ -283,30 +318,35 @@ def analisar_operacao(dados: Dict[str, Any]) -> Dict[str, Any]:
     roi_arredondado = round(roi_12m_pct)
 
     codigos_str = ", ".join(f"{item['quantidade']}x {item['codigo']}" for item in mix)
+    nome_operacao = empresa or "sua operação"
+    modo_txt = modo_info["rotulo"].lower()
 
-    # Textos analíticos detalhados para a tela de resultado
+    # Fluxo de caixa acumulado mês a mês (mês 0 = investimento inicial)
+    fluxo_caixa = [round(-investimento_inicial + ganho_liquido_mensal * m, 2) for m in range(0, 13)]
+
+    # Textos analíticos personalizados para a empresa e o modo de operação
     analises = {
         "economia": (
-            f"Com {qtd_dispositivos} pontos monitorados ({codigos_str}) no segmento de "
-            f"{seg_info['rotulo'].lower()}, estima-se uma economia de {formatar_brl(economia_mensal)}/mês "
-            f"({formatar_brl(economia_anual)}/ano). Como o cenário atual é '{coleta_info['rotulo']}', "
-            f"{coleta_info['descricao'].lower()}"
+            f"Para {nome_operacao}, com {qtd_dispositivos} pontos monitorados ({codigos_str}) em "
+            f"{seg_info['rotulo'].lower()} e regime de {modo_txt}, estima-se economia de "
+            f"{formatar_brl(economia_mensal)}/mês ({formatar_brl(economia_anual)}/ano). "
+            f"Cenário atual: {coleta_info['rotulo'].lower()} — {coleta_info['descricao'].lower()}"
         ),
         "roi": (
-            f"Considerando investimento inicial de {formatar_brl(investimento_inicial)} "
-            f"(hardware, {qtd_gateways} gateway(s) e instalação) mais {formatar_brl(opex_anual)}/ano "
-            f"de plataforma SaaS ({pacote['nome']}), o retorno líquido em 12 meses é de "
-            f"{formatar_brl(lucro_liquido_12m)}, resultando em ROI de {roi_arredondado}%."
+            f"Investimento inicial de {formatar_brl(investimento_inicial)} (hardware, {qtd_gateways} "
+            f"gateway(s) e instalação) mais {formatar_brl(opex_anual)}/ano de plataforma ({pacote['nome']}). "
+            f"O retorno líquido de {nome_operacao} em 12 meses é de {formatar_brl(lucro_liquido_12m)}, "
+            f"ROI de {roi_arredondado}%."
         ),
         "payback": (
-            f"Com ganho líquido mensal estimado em {formatar_brl(ganho_liquido_mensal)} "
-            f"(economia mensal já descontando a mensalidade SaaS de {formatar_brl(opex_mensal)}), "
-            f"o capital investido retorna em aproximadamente {payback_meses:.1f} meses."
+            f"Com ganho líquido de {formatar_brl(ganho_liquido_mensal)}/mês (já descontada a mensalidade de "
+            f"{formatar_brl(opex_mensal)}), o capital investido por {nome_operacao} retorna em "
+            f"aproximadamente {payback_meses:.1f} meses."
         ),
         "eficiencia": (
-            f"O mix recomendado prioriza {seg_info['foco']}, projetando redução média de "
-            f"{economia_energia_arredondada}% no consumo energético e até {round(reducao_paradas_pct)}% "
-            f"menos paradas corretivas não planejadas."
+            f"Operando em {modo_txt} ({modo_info['horas_dia']}h/dia), o mix prioriza {seg_info['foco']}, "
+            f"projetando redução média de {economia_energia_arredondada}% no consumo energético e até "
+            f"{round(reducao_paradas_pct)}% menos paradas não planejadas."
         ),
     }
 
@@ -317,16 +357,24 @@ def analisar_operacao(dados: Dict[str, Any]) -> Dict[str, Any]:
             "segmento_rotulo": seg_info["rotulo"],
             "coleta_atual": coleta_key,
             "coleta_rotulo": coleta_info["rotulo"],
+            "modo_operacao": modo_key,
+            "modo_rotulo": modo_info["rotulo"],
             "endpoint_preferido": endpoint_pref or "",
             "principal_dor": principal_dor,
             "custo_energia_mensal": custo_energia_mensal,
             "custo_manutencao_mensal": custo_manutencao_mensal,
-            "empresa": dados.get("empresa") or "",
+            "empresa": empresa,
+            "responsavel": responsavel,
+            "cidade": cidade,
+            "email": _texto_limpo(dados.get("email"), 254),
+            "telefone": _texto_limpo(dados.get("telefone"), 40),
+            "descricao_operacao": descricao_operacao,
         },
         "pacote_recomendado": pacote["nome"],
         "cobertura_pct": pacote["cobertura_pct"],
         "qtd_gateways": qtd_gateways,
         "dispositivos_sugeridos": mix,
+        "fluxo_caixa": fluxo_caixa,
         "financeiro": {
             "investimento_inicial_brl": round(investimento_inicial, 2),
             "opex_mensal_brl": round(opex_mensal, 2),
@@ -352,6 +400,10 @@ def analisar_operacao(dados: Dict[str, Any]) -> Dict[str, Any]:
             "payback": f"{payback_arredondado} {'mês' if payback_arredondado == 1 else 'meses'}",
             "reducao_energia": f"{economia_energia_arredondada}%",
         },
-        "subtitulo_cenario": f"Cenário para {seg_info['rotulo'].lower()}, priorizando {seg_info['foco']}.",
+        "titulo_empresa": empresa or "Sua operação",
+        "subtitulo_cenario": (
+            f"Cenário para {nome_operacao} — {seg_info['rotulo'].lower()}, {modo_txt}, "
+            f"priorizando {seg_info['foco']}."
+        ),
         "analises": analises,
     }
