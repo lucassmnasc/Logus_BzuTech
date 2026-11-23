@@ -6,15 +6,15 @@
   <title>{% block title %}Bzu Tech{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@700&family=Montserrat:wght@300;400;500;600;700;800&display=swap">
-  <link rel="stylesheet" href="{% static 'meu_app/css/base.css' %}">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;700&family=Montserrat:wght@200;300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="{% static 'meu_app/css/base.css' %}?v=3">
   {% block css %}{% endblock %}
 </head>
 <body>
   <canvas id="bg" aria-hidden="true"></canvas>
 
   <header class="navbar">
-    <a class="logo" href="{% url 'home' %}"><img src="{% static 'meu_app/img/logo-bzu.svg' %}" alt="Bzu Tech"></a>
+    <a class="logo" href="{% url 'home' %}"><img src="{% static 'meu_app/img/bzu_tech_logo.png' %}" alt="Bzu Tech"></a>
     <nav class="nav-items" aria-label="Principal">
       <a href="#">SOBRE A BZU</a>
       <a href="#">SOLUÇÃO BZU</a>
@@ -31,7 +31,7 @@
 
   <main>{% block content %}{% endblock %}</main>
 
-  <script src="{% static 'meu_app/js/base.js' %}"></script>
+  <script src="{% static 'meu_app/js/base.js' %}?v=3"></script>
   {% block js %}{% endblock %}
 </body>
 </html>
