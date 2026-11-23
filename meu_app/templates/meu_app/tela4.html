@@ -1,0 +1,130 @@
+{% load static %}<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BZU Tech | Configurar simulação</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,500&display=swap">
+  <link rel="stylesheet" href="{% static 'css/tela4.css' %}">
+</head>
+<body>
+
+<!-- ícones (sprite) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-fabrica" viewBox="0 0 26 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><path d="M2 21V8l5 3V8l5 3V8l5 3V3h7v18z"/><path d="M6 17h2M11 17h2M16 17h2" stroke-dasharray="1 2"/></symbol>
+  <symbol id="i-caminhao" viewBox="0 0 30 22" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><path d="M2 3h16v12H2zM18 7h6l4 4v4H18z"/><circle cx="8" cy="17" r="2.5"/><circle cx="22" cy="17" r="2.5"/></symbol>
+  <symbol id="i-predio" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><path d="M3 23V9l5-4v18M8 23V11h6v12M14 14h6v9M11 15v2M17 17v2M11 19v2"/></symbol>
+  <symbol id="i-galpao" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><path d="M3 23V10l10-6 10 6v13z"/><path d="M7 23v-9h12v9M7 17h12M7 20h12"/></symbol>
+  <symbol id="i-sinal" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><circle cx="8" cy="8" r="1.4"/><path d="M5 5a4.2 4.2 0 0 0 0 6M11 5a4.2 4.2 0 0 1 0 6M3 3a7 7 0 0 0 0 10M13 3a7 7 0 0 1 0 10"/></symbol>
+  <symbol id="i-check" viewBox="0 0 14 14"><circle cx="7" cy="7" r="7" fill="#2a0d30"/><path d="M4 7.2l2.1 2.1L10 5.2" fill="none" stroke="#c88ad9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M14 6l6 6-6 6"/></symbol>
+</svg>
+
+<div class="tela">
+  <main class="conteudo">
+
+    <!-- 1. dispositivos -->
+    <section class="painel">
+      <h2>Dispositivos conectados</h2>
+      <output id="badge" for="qtd">80</output>
+      <input id="qtd" type="range" min="10" max="500" step="10" value="80" aria-label="Dispositivos conectados">
+      <div class="escala"><span>10 dispositivos</span><span>500+<br>dispositivos</span></div>
+    </section>
+
+    <!-- 2. segmento -->
+    <section class="grade cats" aria-label="Segmento">
+      <label class="opt"><input type="radio" name="segmento" value="Industriais" checked>
+        <span class="box"><svg class="ic" width="26" height="24"><use href="#i-fabrica"/></svg><b>Sensores industriais</b></span></label>
+      <label class="opt"><input type="radio" name="segmento" value="Frotas">
+        <span class="box"><b>Monitoramento de frotas</b><svg class="ic" width="30" height="22"><use href="#i-caminhao"/></svg></span></label>
+      <label class="opt"><input type="radio" name="segmento" value="Predial">
+        <span class="box"><svg class="ic" width="26" height="26"><use href="#i-predio"/></svg><b>Automação predial</b></span></label>
+      <label class="opt"><input type="radio" name="segmento" value="Logística">
+        <span class="box"><b>Logística</b><svg class="ic" width="26" height="26"><use href="#i-galpao"/></svg></span></label>
+    </section>
+
+    <!-- 3. telemetria -->
+    <section class="grade tempos" aria-label="Telemetria">
+      <label class="opt"><input type="radio" name="tempo" value="Tempo real" checked><span class="box">Tempo real</span></label>
+      <label class="opt"><input type="radio" name="tempo" value="Por hora"><span class="box">Por hora</span></label>
+      <label class="opt"><input type="radio" name="tempo" value="Por dia"><span class="box">Por dia</span></label>
+    </section>
+
+    <!-- 4. pacotes -->
+    <section class="grade pacotes" aria-label="Pacotes">
+      <label class="opt pacote"><input type="radio" name="pacote" value="Starter IoT">
+        <span class="box">
+          <small class="topo">COMEÇE A CONECTAR</small>
+          <h3>Starter IOT</h3>
+          <p>Para operações menores que precisam de visibilidade.</p>
+          <hr>
+          <ul>
+            <li><svg width="14" height="14"><use href="#i-check"/></svg>Até 20 dispositivos</li>
+            <li><svg width="14" height="14"><use href="#i-check"/></svg>1 gateway incluso</li>
+            <li><svg width="14" height="14"><use href="#i-check"/></svg>Painel de monitoramento</li>
+          </ul>
+          <hr>
+          <span class="rodape"><em class="off">Selecione o pacote</em><em class="on">Pacote selecionado!</em><svg width="20" height="20"><use href="#i-seta"/></svg></span>
+        </span></label>
+
+      <label class="opt pacote"><input type="radio" name="pacote" value="Business IoT" checked>
+        <span class="box">
+          <small class="topo">COMEÇE A CONECTAR</small>
+          <h3>Business IoT</h3>
+          <p>Gestão completa para operações em crescimento.</p>
+          <hr>
+          <ul>
+            <li><svg width="14" height="14"><use href="#i-check"/></svg>Até 150 dispositivos</li>
+            <li><svg width="14" height="14"><use href="#i-check"/></svg>3 gateway incluso</li>
+            <li><svg width="14" height="14"><use href="#i-check"/></svg>Alertas e analytics avançado</li>
+          </ul>
+          <hr>
+          <span class="rodape"><em class="off">Selecione o pacote</em><em class="on">Pacote selecionado!</em><svg width="20" height="20"><use href="#i-seta"/></svg></span>
+        </span></label>
+
+      <label class="opt pacote"><input type="radio" name="pacote" value="Enterprise">
+        <span class="box">
+          <small class="topo">COMEÇE A CONECTAR</small>
+          <h3>Enterprise Sob Consulta</h3>
+          <p>Infraestrutura robusta para grandes operações</p>
+          <hr>
+          <ul>
+            <li><svg width="14" height="14"><use href="#i-check"/></svg>Dispositivos ilimitados</li>
+            <li><svg width="14" height="14"><use href="#i-check"/></svg>Arquitetura personalizada</li>
+            <li><svg width="14" height="14"><use href="#i-check"/></svg>SLA e suporte dedicado</li>
+          </ul>
+          <hr>
+          <span class="rodape"><em class="off">Selecione o pacote</em><em class="on">Pacote selecionado!</em><svg width="20" height="20"><use href="#i-seta"/></svg></span>
+        </span></label>
+    </section>
+
+    <!-- 5. resumo -->
+    <section class="secao resumo">
+      <h2>Resumo da simulação</h2>
+      <div class="linha"><svg width="16" height="16"><use href="#i-sinal"/></svg><span>Dispositivos</span><b id="res-qtd">80</b></div>
+      <div class="linha"><svg width="16" height="16"><use href="#i-fabrica"/></svg><span>Cobertura</span><b id="res-seg">Industriais</b></div>
+      <div class="linha"><svg width="16" height="16"><use href="#i-sinal"/></svg><span>Telemetria</span><b id="res-tempo">Tempo real</b></div>
+      <div class="linha"><svg width="16" height="16"><use href="#i-predio"/></svg><span>Pacote</span><b id="res-pacote">Business IoT</b></div>
+    </section>
+
+    <!-- 6. formulário -->
+    <section class="secao lead">
+      <h2>Receba uma proposta personalizada</h2>
+      <form id="form-lead" method="post" action="#">
+        {% csrf_token %}
+        <label class="campo cheio">Nome completo<input name="nome" type="text" placeholder="Como posso te chamar?" required></label>
+        <label class="campo cheio">E-mail<input name="email" type="email" placeholder="seunome@email.com" required></label>
+        <label class="campo">Empresa<input name="empresa" type="text" placeholder="Nome da empresa"></label>
+        <label class="campo">Telefone/WhatsApp<input name="telefone" type="tel" placeholder="(81)0000-0000"></label>
+        <button class="enviar" type="submit">Solicitar proposta comercial <svg width="16" height="16"><use href="#i-seta"/></svg></button>
+      </form>
+    </section>
+
+  </main>
+</div>
+
+<script src="{% static 'js/tela4.js' %}"></script>
+</body>
+</html>

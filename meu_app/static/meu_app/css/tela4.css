@@ -1,0 +1,100 @@
+:root{
+  --esc:#2a0d30; --card:#3d1046; --card-borda:#5b2f66;
+  --sel:#7a4585; --sel-borda:#4b2056; --botao:#51075f; --lilas:#c88ad9;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Montserrat',sans-serif;color:#fff;background:#4f2250}
+svg{flex:none}
+
+.tela{min-height:100vh;padding:48px 24px 80px;
+  background:linear-gradient(180deg,#c27bd4 0%,#7a4585 55%,#4f2250 100%)}
+.conteudo{width:min(925px,100%);margin:0 auto}
+h2,h3,p{margin:0}
+
+/* ---------- opções (radio escondido + label) ---------- */
+.opt{position:relative;display:block;cursor:pointer}
+.opt input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.opt .box{display:block;transition:background .2s,border-color .2s,transform .2s}
+.opt:hover .box{transform:translateY(-2px)}
+.opt input:focus-visible + .box{outline:2px solid #fff;outline-offset:3px}
+.grade{display:grid}
+.ic{color:var(--lilas)}
+
+/* ---------- 1. dispositivos ---------- */
+.painel{position:relative;padding:40px 37px 18px;border-radius:12px;
+  background:linear-gradient(180deg,#3d1046,#2a0d30)}
+.painel h2{font-size:18px;font-weight:600}
+#badge{position:absolute;top:24px;right:37px;min-width:56px;padding:5px 0;text-align:center;
+  border:1px solid #9a62a6;border-radius:4px;background:var(--sel);font-size:11px;font-weight:700}
+#qtd{display:block;width:100%;height:3px;margin:22px 0 0;border-radius:3px;cursor:pointer;
+  -webkit-appearance:none;appearance:none;outline:0;
+  background:linear-gradient(90deg,#a96bb9 var(--pct,14%),#6b3c76 var(--pct,14%))}
+#qtd::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#ecd3f3;border:2px solid #a96bb9}
+#qtd::-moz-range-thumb{width:8px;height:8px;border-radius:50%;background:#ecd3f3;border:2px solid #a96bb9}
+.escala{display:flex;justify-content:space-between;margin-top:14px;font-size:13px;font-weight:500;line-height:1.15}
+.escala span:last-child{text-align:left}
+
+/* ---------- 2. segmento ---------- */
+.cats{grid-template-columns:repeat(4,1fr);gap:18px;margin-top:30px}
+.cats .box{display:flex;flex-direction:column;justify-content:space-between;height:104px;padding:20px 11px 12px;
+  border:1px solid #4a1d54;border-radius:8px;background:linear-gradient(180deg,#3d1046,#2a0d30);
+  font-size:17px;line-height:1.4}
+.cats b{font-weight:700}
+.cats input:checked + .box{background:var(--sel);border-color:var(--sel-borda)}
+
+/* ---------- 3. telemetria ---------- */
+.tempos{grid-template-columns:repeat(3,1fr);gap:48px;margin-top:45px}
+.tempos .box{display:grid;place-items:center;height:58px;border-radius:6px;
+  background:var(--botao);font-size:28px;font-weight:700}
+.tempos input:checked + .box{background:var(--sel)}
+
+/* ---------- 4. pacotes ---------- */
+.pacotes{grid-template-columns:repeat(3,1fr);gap:13px;margin-top:49px}
+.pacote .box{height:100%;min-height:322px;padding:22px 30px 26px;border:3px solid var(--card-borda);border-radius:14px;
+  background:linear-gradient(180deg,#3d1046,#2a0d30)}
+.pacote input:checked + .box{background:var(--sel);border-color:var(--sel-borda)}
+.topo{display:block;margin-bottom:22px;text-align:center;font-size:11px;letter-spacing:1.4px;color:#cfb0d8}
+.pacote h3{display:flex;align-items:center;min-height:50px;font-size:22px;font-weight:700;line-height:1.05}
+.pacote p{margin-top:4px;font-size:11px;font-weight:500;line-height:1.2}
+.pacote hr{margin:16px 0;border:0;border-top:1px solid rgba(255,255,255,.4)}
+.pacote ul{margin:0;padding:0;list-style:none}
+.pacote li{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;line-height:21px;color:#e3d2e8}
+.rodape{display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#e0b5ec}
+.rodape svg{margin-top:14px;color:var(--lilas)}
+.rodape em{font-style:normal}
+.rodape .on{display:none;font-style:italic;font-weight:500}
+.pacote input:checked + .box .on{display:inline}
+.pacote input:checked + .box .off{display:none}
+
+/* ---------- 5 e 6. resumo e formulário ---------- */
+.secao{padding-left:22px}
+.secao h2{font-size:28px;font-weight:700}
+.resumo{margin-top:15px}
+.resumo > *{max-width:308px}
+.linha{display:flex;align-items:center;gap:9px;padding:9px 0 7px;border-bottom:1px solid rgba(255,255,255,.35);font-size:15px}
+.linha:first-of-type{margin-top:6px}
+.linha b{margin-left:auto;font-weight:500}
+.lead{margin-top:38px}
+#form-lead{display:grid;grid-template-columns:1fr 1fr;gap:20px 14px;width:min(434px,100%);margin-top:14px}
+.campo{display:flex;flex-direction:column;gap:7px;font-size:15px;font-weight:600}
+.cheio{grid-column:1/-1}
+.campo input{height:41px;padding:0 13px;border:1px solid #fff;border-radius:0;background:rgba(255,255,255,.08);
+  color:#fff;font:500 15px 'Montserrat',sans-serif}
+.campo input::placeholder{color:#fff;opacity:.9}
+.campo input:focus{outline:2px solid #fff;outline-offset:2px}
+.enviar{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:6px;height:41px;margin-top:6px;cursor:pointer;
+  border:1px solid #fff;color:#fff;font:700 15px 'Montserrat',sans-serif;
+  background:linear-gradient(90deg,#2a0d30,#c27bd4);transition:filter .2s}
+.enviar:hover{filter:brightness(1.15)}
+
+/* ---------- responsivo ---------- */
+@media (max-width:900px){
+  .cats{grid-template-columns:1fr 1fr}
+  .tempos{grid-template-columns:1fr;gap:16px}
+  .pacotes{grid-template-columns:1fr}
+}
+@media (max-width:520px){
+  .cats{grid-template-columns:1fr}
+  .secao{padding-left:0}
+  #form-lead{grid-template-columns:1fr}
+}
