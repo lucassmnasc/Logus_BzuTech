@@ -80,3 +80,34 @@ class ApiViewsTests(TestCase):
         data = resp.json()
         self.assertIn("resposta", data)
         self.assertEqual(data["simulacao"]["parametros"]["qtd_dispositivos"], 30)
+
+    def test_chat_inicia_zerado_e_saudacao_nao_preenche(self):
+        page = self.client.get(reverse("chat"))
+        self.assertEqual(page.status_code, 200)
+        self.assertContains(page, "R$ 0")
+        self.assertContains(page, "Nenhum dispositivo sugerido ainda")
+
+        resp = self.client.post(
+            reverse("api_chat"),
+            data=json.dumps({"mensagem": "oi"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertIsNone(resp.json()["simulacao"])
+
+    def test_relatorio_pdf(self):
+        resp = self.client.post(
+            reverse("relatorio_pdf"),
+            data=json.dumps({
+                "parametros": {
+                    "empresa": "AutoCenter Recife",
+                    "segmento": "autocentro",
+                    "modo_operacao": "dois-turnos",
+                    "qtd_dispositivos": 40,
+                }
+            }),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "application/pdf")
+        self.assertTrue(resp.content.startswith(b"%PDF"))

@@ -8,9 +8,12 @@ class SimulacaoLead(models.Model):
     email = models.EmailField(blank=True)
     empresa = models.CharField(max_length=150, blank=True)
     telefone = models.CharField(max_length=40, blank=True)
+    cidade = models.CharField(max_length=80, blank=True)
 
     segmento = models.CharField(max_length=50, default="autocentro")
     coleta_atual = models.CharField(max_length=50, default="planilha-manual")
+    modo_operacao = models.CharField(max_length=30, default="comercial")
+    descricao_operacao = models.TextField(blank=True)
     qtd_dispositivos = models.PositiveIntegerField(default=80)
     endpoint_preferido = models.CharField(max_length=20, blank=True)
 
@@ -33,7 +36,7 @@ class SimulacaoLead(models.Model):
 
 
 class MensagemChat(models.Model):
-    """Histórico opcional das conversas com o Consultor de IA Bzu Tech."""
+    """Histórico opcional das conversas com a LOGUS AI."""
 
     session_id = models.CharField(max_length=64, db_index=True)
     papel = models.CharField(max_length=20, choices=[("user", "Usuário"), ("assistant", "IA")])
