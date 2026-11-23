@@ -1,90 +1,161 @@
+"""Views das páginas e APIs de simulação e chatbot com IA da Bzu Tech."""
+
+from __future__ import annotations
+
+import json
+import uuid
+
+from django.db import DatabaseError
+from django.http import HttpRequest, JsonResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST
 
-from django.http import HttpResponse, Http404
-from .models import Pergunta, Resposta
+from .models import MensagemChat, SimulacaoLead
+from .services.catalog import listar_dispositivos
+from .services.chatbot import enriquecer_analises_com_ia, responder_chat
+from .services.roi_engine import analisar_operacao
 
-from django.views import View
 
-from django.utils import timezone
-from django.shortcuts import redirect
-from django.urls import reverse
+def _parse_json_body(request: HttpRequest) -> dict:
+    try:
+        return json.loads(request.body.decode("utf-8") or "{}")
+    except (ValueError, UnicodeDecodeError):
+        return {}
 
-class MainView(View):
-    def get(self, request):
-        lista_ultimas_questoes = Pergunta.objects.order_by("-data_criacao")
-        contexto = {'perguntas' : lista_ultimas_questoes}
-        return render(request, 'forum/index.html', contexto)
 
-class PerguntaView(View):
-    def get(self, request, pergunta_id):
+def _get_or_create_session_id(request: HttpRequest) -> str:
+    if not request.session.session_key:
         try:
-            pergunta = Pergunta.objects.get(pk=pergunta_id)
-        except Pergunta.DoesNotExist:
-            raise Http404("Pergunta inexistente")
-        contexto = {'pergunta' : pergunta}
-        return render(request, 'forum/detalhe.html', contexto)
-
-class VotoView(View):
-    def get(self, request, resposta_id):
-        try:
-            resposta = Resposta.objects.get(pk=resposta_id)
-        except Resposta.DoesNotExist:
-            raise Http404("Resposta inexistente")
-        return HttpResponse(str(resposta) + "; votos: " + str(resposta.votos))
-
-    def post(self, request, resposta_id):
-        try:
-            resposta = Resposta.objects.get(pk=resposta_id)
-        except Resposta.DoesNotExist:
-            raise Http404("Resposta inexistente")
-        resposta.votos += 1
-        resposta.save()
-        return redirect(reverse('forum:detalhe', args=[resposta.pergunta.id]))
-
-class InserirPerguntaView(View):
-    def get(self, request):
-        return render(request, 'forum/inserir_pergunta.html')
-
-    def post(self, request):
-        if request.user.is_authenticated:
-            usuario = request.user.username
-        else:
-            usuario = 'anônimo'
-        titulo = request.POST.get('titulo')
-        detalhe = request.POST.get('detalhe')
-        tentativa = request.POST.get('tentativa')
-        data_criacao = timezone.now()
-        
-        pergunta = Pergunta(titulo=titulo, detalhe=detalhe, 
-tentativa=tentativa, 	data_criacao=data_criacao, usuario=usuario)
-        pergunta.save()
-
-        return redirect(reverse('forum:detalhe', args=[pergunta.id]))
-
-class InserirRespostaView(View):
-    def get(self, request, pergunta_id):
-        try:
-            pergunta = Pergunta.objects.get(pk=pergunta_id)
-        except Pergunta.DoesNotExist:
-            raise Http404("Pergunta inexistente")
-        contexto = {'pergunta' : pergunta}
-        return render(request, 'forum/inserir_resposta.html', contexto)
-
-    def post(self, request, pergunta_id):
-        try:
-            pergunta = Pergunta.objects.get(pk=pergunta_id)
-        except Pergunta.DoesNotExist:
-            raise Http404("Pergunta inexistente")
-
-        if request.user.is_authenticated:
-            usuario = request.user.username
-        else:
-            usuario = 'anônimo'
-        texto = request.POST.get('texto_resposta')
-        data_criacao = timezone.now()
-        
-        pergunta.resposta_set.create(texto=texto, data_criacao=data_criacao, usuario=usuario)
-
-        return redirect(reverse('forum:detalhe', args=[pergunta.id]))
+            request.session.create()
+        except DatabaseError:
+            return uuid.uuid4().hex[:16]
+    return request.session.session_key or uuid.uuid4().hex[:16]
 
 
+def chat_page(request: HttpRequest):
+    """Página dedicada do Consultor de IA Bzu Tech."""
+    simulacao_inicial = request.session.get("bzu_ultima_simulacao") or analisar_operacao({})
+    return render(
+        request,
+        "meu_app/chat.html",
+        {
+            "simulacao_inicial_json": json.dumps(simulacao_inicial, ensure_ascii=False),
+            "dispositivos": listar_dispositivos(),
+        },
+    )
+
+
+def resultado_page(request: HttpRequest):
+    """Tela de resultado com a última simulação da sessão (ou padrão calculado)."""
+    simulacao = request.session.get("bzu_ultima_simulacao") or analisar_operacao(
+        {"qtd_dispositivos": 80, "segmento": "industria", "coleta_atual": "planilha-manual"}
+    )
+    return render(
+        request,
+        "meu_app/resultado.html",
+        {
+            "simulacao": simulacao,
+            "simulacao_json": json.dumps(simulacao, ensure_ascii=False),
+        },
+    )
+
+
+@require_GET
+def api_dispositivos(request: HttpRequest) -> JsonResponse:
+    """Retorna o catálogo configurável de dispositivos IoT Bzu Tech."""
+    return JsonResponse({"dispositivos": listar_dispositivos()})
+
+
+@csrf_exempt
+@require_POST
+def api_simular(request: HttpRequest) -> JsonResponse:
+    """
+    Recebe dados da operação (questionário + configurar), calcula dispositivos sugeridos,
+    Payback e ROI, enriquece a análise com IA (quando configurada) e salva na sessão/banco.
+    """
+    payload = _parse_json_body(request)
+    simulacao = analisar_operacao(payload)
+    simulacao["modo_ia"] = "local"
+    simulacao = enriquecer_analises_com_ia(simulacao)
+
+    try:
+        request.session["bzu_ultima_simulacao"] = simulacao
+        request.session["bzu_contexto_operacao"] = simulacao["parametros"]
+    except DatabaseError:
+        pass
+
+    # Persiste no banco se as migrations já tiverem sido aplicadas
+    try:
+        SimulacaoLead.objects.create(
+            nome=str(payload.get("nome", ""))[:150],
+            email=str(payload.get("email", ""))[:254],
+            empresa=str(payload.get("empresa", ""))[:150],
+            telefone=str(payload.get("telefone", ""))[:40],
+            segmento=simulacao["parametros"]["segmento"],
+            coleta_atual=simulacao["parametros"]["coleta_atual"],
+            qtd_dispositivos=simulacao["parametros"]["qtd_dispositivos"],
+            endpoint_preferido=simulacao["parametros"]["endpoint_preferido"],
+            economia_anual_brl=simulacao["financeiro"]["economia_anual_brl"],
+            roi_12m_pct=simulacao["financeiro"]["roi_12m_pct"],
+            payback_meses=simulacao["financeiro"]["payback_meses"],
+            reducao_energia_pct=simulacao["financeiro"]["reducao_energia_pct"],
+            resultado_json=simulacao,
+        )
+    except DatabaseError:
+        pass
+
+    return JsonResponse(simulacao)
+
+
+@csrf_exempt
+@require_POST
+def api_chat(request: HttpRequest) -> JsonResponse:
+    """
+    Endpoint do chatbot com IA.
+    Recebe: { "mensagem": "...", "contexto": {...}, "historico": [...] }
+    Retorna: { "resposta": "...", "simulacao": {...}, "contexto": {...}, "modo_ia": "gemini"|"local" }
+    """
+    payload = _parse_json_body(request)
+    mensagem = str(payload.get("mensagem", "")).strip()
+    if not mensagem:
+        return JsonResponse({"erro": "Envie uma mensagem válida."}, status=400)
+
+    contexto_sessao = {}
+    try:
+        contexto_sessao = request.session.get("bzu_contexto_operacao") or {}
+    except DatabaseError:
+        pass
+
+    contexto_req = payload.get("contexto") if isinstance(payload.get("contexto"), dict) else {}
+    contexto_combinado = {**contexto_sessao, **contexto_req}
+    historico = payload.get("historico") if isinstance(payload.get("historico"), list) else []
+
+    resposta, simulacao, contexto_atualizado, modo_ia = responder_chat(
+        mensagem=mensagem,
+        contexto=contexto_combinado,
+        historico=historico,
+    )
+
+    try:
+        request.session["bzu_contexto_operacao"] = contexto_atualizado
+        request.session["bzu_ultima_simulacao"] = simulacao
+    except DatabaseError:
+        pass
+
+    # Salva histórico no SQLite se migrado
+    try:
+        sid = _get_or_create_session_id(request)
+        MensagemChat.objects.create(session_id=sid, papel="user", conteudo=mensagem, modo_ia=modo_ia)
+        MensagemChat.objects.create(session_id=sid, papel="assistant", conteudo=resposta, modo_ia=modo_ia)
+    except DatabaseError:
+        pass
+
+    return JsonResponse(
+        {
+            "resposta": resposta,
+            "simulacao": simulacao,
+            "contexto": contexto_atualizado,
+            "modo_ia": modo_ia,
+        }
+    )
