@@ -1,33 +1,26 @@
-"""
-URL configuration for myproject project.
+"""URL configuration for myproject project."""
 
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.1/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path
 from django.views.generic import TemplateView
 
+from meu_app import views
+
 
 def tela(nome):
-    return TemplateView.as_view(template_name=f'meu_app/{nome}.html')
+    return TemplateView.as_view(template_name=f"meu_app/{nome}.html")
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', tela('home'), name='home'),
-    path('carregando/', tela('carregando'), name='carregando'),
-    path('questionario/', tela('questionario'), name='questionario'),
-    path('configurar/', tela('configurar'), name='configurar'),
-    path('resultado/', tela('resultado'), name='resultado'),
+    path("admin/", admin.site.urls),
+    path("", tela("home"), name="home"),
+    path("carregando/", tela("carregando"), name="carregando"),
+    path("questionario/", tela("questionario"), name="questionario"),
+    path("configurar/", tela("configurar"), name="configurar"),
+    path("resultado/", views.resultado_page, name="resultado"),
+    path("chat/", views.chat_page, name="chat"),
+    # APIs de IA e Simulação
+    path("api/simular/", views.api_simular, name="api_simular"),
+    path("api/chat/", views.api_chat, name="api_chat"),
+    path("api/dispositivos/", views.api_dispositivos, name="api_dispositivos"),
 ]
