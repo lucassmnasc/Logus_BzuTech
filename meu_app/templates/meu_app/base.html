@@ -8,30 +8,69 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;700&family=Montserrat:wght@200;300;400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="{% static 'meu_app/css/base.css' %}?v=3">
+  <link rel="stylesheet" href="{% static 'meu_app/css/chat.css' %}?v=1">
   {% block css %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
   <canvas id="bg" aria-hidden="true"></canvas>
 
   <header class="navbar">
     <a class="logo" href="{% url 'home' %}"><img src="{% static 'meu_app/img/bzu_tech_logo.png' %}" alt="Bzu Tech"></a>
     <nav class="nav-items" aria-label="Principal">
-      <a href="#">SOBRE A BZU</a>
-      <a href="#">SOLUÇÃO BZU</a>
-      <a href="#">SEGMENTOS</a>
-      <a href="#">DIFERENCIAIS</a>
+      <a href="{% url 'home' %}">SOBRE A BZU</a>
+      <a href="{% url 'configurar' %}">SOLUÇÃO BZU</a>
+      <a href="{% url 'chat' %}">CONSULTOR IA</a>
+      <a href="{% url 'resultado' %}">RESULTADOS</a>
       <a href="#">CASES</a>
-      <a href="#">INOVAÇÃO</a>
-      <a href="#">QUEM FAZ</a>
       <a href="#">CONTATO</a>
-      <a href="#">LOGIN</a>
     </nav>
     <a class="btn btn-primary btn-sm" href="{% url 'home' %}">Simulador <img src="{% static 'meu_app/img/seta.svg' %}" alt="" width="7" height="20"></a>
   </header>
 
   <main>{% block content %}{% endblock %}</main>
 
+  <!-- Widget Flutuante do Consultor de IA Bzu Tech -->
+  <div id="bzu-chat-widget">
+    <section id="bzu-chat-drawer" class="bzu-chat-drawer" aria-label="Consultor de IA Bzu Tech" hidden>
+      <header class="bzu-chat-header">
+        <div class="bzu-chat-header-info">
+          <strong>Consultor IA Bzu Tech</strong>
+          <small id="bzu-widget-modo">Dispositivos, Payback e ROI</small>
+        </div>
+        <div class="bzu-chat-header-acoes">
+          <a class="bzu-chat-icon-btn" href="{% url 'chat' %}" title="Abrir em tela cheia">Expandir</a>
+          <button type="button" class="bzu-chat-icon-btn" id="bzu-chat-close" aria-label="Fechar chat">✕</button>
+        </div>
+      </header>
+
+      <div class="bzu-chat-body" id="bzu-widget-mensagens" aria-live="polite">
+        <div class="msg msg-bot">
+          <div class="msg-bolha">
+            <p>Olá! Posso analisar os dados da sua operação e indicar os <strong>dispositivos Bzu Tech</strong>, o <strong>Payback</strong> e o <strong>ROI</strong> para o investidor.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bzu-chat-chips" id="bzu-widget-chips">
+        <button type="button" class="chip" data-prompt="Analise minha operação atual e mostre dispositivos sugeridos, payback e ROI.">Analisar minha operação</button>
+        <button type="button" class="chip" data-prompt="Quais dispositivos Bzu Tech devo usar?">Dispositivos sugeridos</button>
+        <button type="button" class="chip" data-prompt="Qual o payback e ROI estimado para o investidor?">Payback e ROI</button>
+      </div>
+
+      <form class="bzu-chat-footer" id="bzu-widget-form">
+        <input type="text" id="bzu-widget-input" placeholder="Descreva sua operação..." autocomplete="off" required>
+        <button type="submit">Enviar</button>
+      </form>
+    </section>
+
+    <button type="button" id="bzu-chat-fab" class="bzu-chat-fab" aria-expanded="false" aria-controls="bzu-chat-drawer">
+      <span class="bzu-chat-dot" aria-hidden="true"></span>
+      Consultor IA
+    </button>
+  </div>
+
   <script src="{% static 'meu_app/js/base.js' %}?v=3"></script>
+  <script src="{% static 'meu_app/js/chat.js' %}?v=1"></script>
   {% block js %}{% endblock %}
 </body>
 </html>

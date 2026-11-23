@@ -10,56 +10,84 @@
       <h1 class="titulo">Visão geral da <span class="grad">oportunidade</span><span class="ponto">.</span></h1>
       <span class="selo"><img src="{% static 'meu_app/img/ic-check.svg' %}" alt="" width="6" height="6">Análise concluída</span>
     </div>
-    <p class="subtitulo">Cenário para indústria, priorizando energia e utilidades.<br>Clique em cada indicador para explorar.</p>
+    <p class="subtitulo" id="res-subtitulo">{{ simulacao.subtitulo_cenario }}<br>Clique em cada indicador para explorar.</p>
   </section>
 
   <section class="indicadores" aria-label="Indicadores">
     <button class="indicador glass" type="button" data-alvo="#det-economia">
       <img src="{% static 'meu_app/img/ic-grafico.svg' %}" alt="" height="30">
-      <small>Economia anual estimada</small><strong>R$ 356.400</strong><em>Ver detalhe &gt;</em></button>
+      <small>Economia anual estimada</small><strong id="card-economia">{{ simulacao.formatado.economia_anual }}</strong><em>Ver detalhe &gt;</em></button>
     <button class="indicador glass" type="button" data-alvo="#det-roi">
       <img src="{% static 'meu_app/img/ic-roi.svg' %}" alt="" height="30">
-      <small>ROI estimado em 12 meses</small><strong>297%</strong><em>ver detalhe &gt;</em></button>
+      <small>ROI estimado em 12 meses</small><strong id="card-roi">{{ simulacao.formatado.roi_12m }}</strong><em>ver detalhe &gt;</em></button>
     <button class="indicador glass" type="button" data-alvo="#det-payback">
       <img src="{% static 'meu_app/img/ic-relogio.svg' %}" alt="" height="30">
-      <small>Payback aproximado</small><strong>4 meses</strong><em>Ver detalhe &gt;</em></button>
+      <small>Payback aproximado</small><strong id="card-payback">{{ simulacao.formatado.payback }}</strong><em>Ver detalhe &gt;</em></button>
     <button class="indicador glass" type="button" data-alvo="#det-eficiencia">
       <img src="{% static 'meu_app/img/ic-energia.svg' %}" alt="" height="30">
-      <small>Economia em energia média</small><strong>18%</strong><em>ver detalhe &gt;</em></button>
+      <small>Economia em energia média</small><strong id="card-eficiencia">{{ simulacao.formatado.reducao_energia }}</strong><em>ver detalhe &gt;</em></button>
+  </section>
+
+  <!-- Seção de Dispositivos Sugeridos pela IA -->
+  <section class="sugeridos glass" aria-label="Dispositivos sugeridos">
+    <div class="sugeridos-topo">
+      <div>
+        <h2>Dispositivos Bzu Tech sugeridos pela IA</h2>
+        <p class="sugeridos-sub">Mix recomendado para <strong id="res-qtd-pontos">{{ simulacao.parametros.qtd_dispositivos }}</strong> pontos monitorados — pacote <strong id="res-pacote">{{ simulacao.pacote_recomendado }}</strong> (investimento inicial estimado em <strong id="res-capex">{{ simulacao.formatado.investimento_inicial }}</strong>).</p>
+      </div>
+      <a class="btn btn-primary btn-sm" href="{% url 'chat' %}">Explorar com Consultor IA</a>
+    </div>
+    <div class="sugeridos-grid" id="res-dispositivos-grid">
+      {% for disp in simulacao.dispositivos_sugeridos %}
+      <article class="sug-card">
+        <div class="sug-card-topo">
+          <span class="sug-codigo">{{ disp.codigo }}</span>
+          <span class="sug-qtd">{{ disp.quantidade }} unidades ({{ disp.percentual_mix }}%)</span>
+        </div>
+        <h3>{{ disp.categoria }}</h3>
+        <p>{{ disp.resumo }}</p>
+      </article>
+      {% endfor %}
+    </div>
   </section>
 
   <div class="detalhes">
     <section id="det-economia" class="detalhe glass">
       <header><img src="{% static 'meu_app/img/ic-grafico.svg' %}" alt="" height="35"><h2>Economia anual</h2></header>
-      <p class="valor">R$ 356.400</p>
-      <div class="rodape"><div><h3>Parâmetros analisados:</h3><p>Inserir análise feita pela IA</p></div>
+      <p class="valor" id="val-economia">{{ simulacao.formatado.economia_anual }}</p>
+      <div class="rodape"><div><h3>Parâmetros analisados:</h3><p id="txt-economia">{{ simulacao.analises.economia }}</p></div>
         <div class="barras" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
     </section>
 
     <section id="det-roi" class="detalhe glass">
       <header><img src="{% static 'meu_app/img/ic-roi.svg' %}" alt="" height="33"><h2>ROI em 12 meses no setor</h2></header>
-      <p class="valor">297%</p>
-      <div class="rodape"><div><h3>Parâmetros analisados:</h3><p>Inserir análise feita pela IA</p></div>
+      <p class="valor" id="val-roi">{{ simulacao.formatado.roi_12m }}</p>
+      <div class="rodape"><div><h3>Parâmetros analisados:</h3><p id="txt-roi">{{ simulacao.analises.roi }}</p></div>
         <div class="barras" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
     </section>
 
     <section id="det-payback" class="detalhe glass">
       <header><img src="{% static 'meu_app/img/ic-relogio.svg' %}" alt="" height="30"><h2>Payback</h2></header>
-      <p class="valor">4 meses</p>
-      <div class="rodape"><div><h3>Parâmetros analisados:</h3><p>Inserir análise feita pela IA</p></div>
+      <p class="valor" id="val-payback">{{ simulacao.formatado.payback }}</p>
+      <div class="rodape"><div><h3>Parâmetros analisados:</h3><p id="txt-payback">{{ simulacao.analises.payback }}</p></div>
         <div class="barras" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
     </section>
 
     <section id="det-eficiencia" class="detalhe glass">
-      <header><img src="{% static 'meu_app/img/ic-relogio.svg' %}" alt="" height="30"><h2>Eficiência energética</h2></header>
-      <p class="valor">18% <span class="unidade">em redução</span></p>
-      <div class="rodape"><div><h3>Parâmetros analisados:</h3><p>Inserir análise feita pela IA</p></div>
+      <header><img src="{% static 'meu_app/img/ic-energia.svg' %}" alt="" height="30"><h2>Eficiência energética</h2></header>
+      <p class="valor"><span id="val-eficiencia">{{ simulacao.formatado.reducao_energia }}</span> <span class="unidade">em redução</span></p>
+      <div class="rodape"><div><h3>Parâmetros analisados:</h3><p id="txt-eficiencia">{{ simulacao.analises.eficiencia }}</p></div>
         <div class="barras" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
     </section>
   </div>
 
-  <div class="fim"><a class="btn btn-outline" href="{% url 'home' %}">próxima &gt;</a></div>
+  <div class="fim">
+    <a class="btn btn-primary" href="{% url 'chat' %}">Tirar dúvidas com a IA</a>
+    <a class="btn btn-outline" href="{% url 'home' %}">Nova simulação &gt;</a>
+  </div>
 </div>
+
+<script id="resultado-simulacao-data" type="application/json">{{ simulacao_json|safe }}</script>
 {% endblock %}
 
 {% block js %}<script src="{% static 'meu_app/js/resultado.js' %}"></script>{% endblock %}

@@ -1,0 +1,466 @@
+/* =========================================================
+   Página dedicada /chat/ + Widget Flutuante Consultor IA Bzu
+   ========================================================= */
+
+.chat-page {
+  padding: 56px 0 96px;
+}
+
+.chat-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
+.chat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  margin-bottom: 14px;
+  border-radius: 999px;
+  border: 1px solid var(--lilas-claro);
+  background: rgba(187, 29, 212, 0.14);
+  color: var(--lilas-claro);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.chat-btn-simulador {
+  font-size: 15px;
+  padding: 12px 22px;
+  min-width: auto;
+}
+
+.chat-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.chat-card {
+  display: flex;
+  flex-direction: column;
+  height: 640px;
+  padding: 24px;
+  border: 1px solid rgba(224, 159, 241, 0.18);
+}
+
+.chat-mensagens {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-right: 6px;
+}
+
+.msg {
+  display: flex;
+  max-width: 88%;
+}
+
+.msg-user {
+  align-self: flex-end;
+}
+
+.msg-bot {
+  align-self: flex-start;
+}
+
+.msg-bolha {
+  padding: 14px 18px;
+  border-radius: 20px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.msg-user .msg-bolha {
+  background: linear-gradient(120deg, var(--roxo), var(--roxo-vivo));
+  color: #fff;
+  border-bottom-right-radius: 6px;
+}
+
+.msg-bot .msg-bolha {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(224, 159, 241, 0.2);
+  color: #f4eef8;
+  border-bottom-left-radius: 6px;
+}
+
+.msg-bolha p {
+  margin: 0 0 8px;
+}
+
+.msg-bolha p:last-child {
+  margin-bottom: 0;
+}
+
+.msg-bolha ul {
+  margin: 6px 0 8px 18px;
+  padding: 0;
+}
+
+.msg-bolha li {
+  margin-bottom: 4px;
+}
+
+.msg-bolha code {
+  background: rgba(187, 29, 212, 0.22);
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #f3d9fa;
+}
+
+.chat-sugestoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 12px;
+}
+
+.chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(224, 159, 241, 0.35);
+  color: #f3d9fa;
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.chip:hover {
+  background: rgba(187, 29, 212, 0.25);
+  border-color: var(--lilas-claro);
+}
+
+.chat-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.chat-form input {
+  flex: 1;
+  background: rgba(10, 16, 26, 0.85);
+  border: 1px solid rgba(224, 159, 241, 0.35);
+  border-radius: 26px;
+  padding: 13px 18px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.chat-form input:focus {
+  border-color: var(--roxo-vivo);
+}
+
+/* Painel lateral do investidor */
+.chat-painel {
+  padding: 24px;
+  border: 1px solid rgba(224, 159, 241, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.painel-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.painel-cabecalho h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.pacote-tag {
+  background: rgba(18, 161, 155, 0.2);
+  border: 1px solid var(--teal);
+  color: #9ff7f2;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.painel-cenario {
+  margin: 0;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.45;
+}
+
+.kpis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.kpi {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(224, 159, 241, 0.16);
+  border-radius: 18px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kpi small {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.kpi strong {
+  font-size: 22px;
+  color: var(--lilas-claro);
+}
+
+.painel-dispositivos h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.lista-disp {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.disp-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(224, 159, 241, 0.16);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.disp-item-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.disp-item-topo strong {
+  color: #fff;
+  font-size: 14px;
+}
+
+.disp-qtd {
+  background: var(--roxo-badge);
+  color: #fff;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.disp-item p {
+  margin: 0;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.74);
+  line-height: 1.4;
+}
+
+.chat-ver-resultado {
+  width: 100%;
+  font-size: 15px;
+  padding: 13px 18px;
+}
+
+/* =========================================================
+   Widget Flutuante (disponível em todas as telas)
+   ========================================================= */
+
+.pagina-chat #bzu-chat-widget {
+  display: none;
+}
+
+#bzu-chat-widget {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 999;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.bzu-chat-fab {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(224, 159, 241, 0.55);
+  background: linear-gradient(120deg, var(--roxo), var(--roxo-vivo));
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 12px 32px rgba(97, 15, 110, 0.55);
+  transition: transform 0.2s, filter 0.2s;
+}
+
+.bzu-chat-fab:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.12);
+}
+
+.bzu-chat-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #4ef2df;
+  box-shadow: 0 0 10px #4ef2df;
+}
+
+.bzu-chat-drawer {
+  position: absolute;
+  right: 0;
+  bottom: 64px;
+  width: min(390px, calc(100vw - 32px));
+  height: 530px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(12, 16, 28, 0.96);
+  border: 1px solid rgba(224, 159, 241, 0.35);
+  border-radius: 24px;
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.65);
+  -webkit-backdrop-filter: blur(22px);
+  backdrop-filter: blur(22px);
+  overflow: hidden;
+}
+
+.bzu-chat-drawer[hidden] {
+  display: none;
+}
+
+.bzu-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: linear-gradient(90deg, rgba(97, 15, 110, 0.75), rgba(187, 29, 212, 0.35));
+  border-bottom: 1px solid rgba(224, 159, 241, 0.2);
+}
+
+.bzu-chat-header-info strong {
+  display: block;
+  font-size: 14.5px;
+}
+
+.bzu-chat-header-info small {
+  font-size: 11.5px;
+  color: #e9d2f5;
+}
+
+.bzu-chat-header-acoes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bzu-chat-icon-btn {
+  background: rgba(255, 255, 255, 0.12);
+  border: 0;
+  color: #fff;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bzu-chat-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.bzu-chat-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bzu-chat-body .msg {
+  max-width: 92%;
+}
+
+.bzu-chat-body .msg-bolha {
+  padding: 11px 14px;
+  font-size: 13.5px;
+}
+
+.bzu-chat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 14px 10px;
+}
+
+.bzu-chat-chips .chip {
+  font-size: 11.5px;
+  padding: 5px 10px;
+}
+
+.bzu-chat-footer {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid rgba(224, 159, 241, 0.16);
+}
+
+.bzu-chat-footer input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(224, 159, 241, 0.3);
+  border-radius: 20px;
+  padding: 10px 14px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.bzu-chat-footer button {
+  background: linear-gradient(90deg, var(--roxo), var(--roxo-vivo));
+  color: #fff;
+  border: 0;
+  border-radius: 20px;
+  padding: 0 16px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.msg-loading .msg-bolha {
+  opacity: 0.75;
+  font-style: italic;
+}
+
+@media (max-width: 960px) {
+  .chat-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-card {
+    height: 520px;
+  }
+}
