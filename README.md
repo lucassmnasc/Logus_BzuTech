@@ -42,9 +42,14 @@ python -m venv venv
 source venv/bin/activate   # Windows: venv\Scripts\activate
 
 # instalar as dependências
-pip install django
+pip install -r requirements.txt
+
+# (opcional) configurar a chave do Google Gemini para respostas generativas avançadas
+# sem a chave, o chatbot funciona normalmente com o motor preditivo local
+cp .env.example .env
 
 # rodar o projeto
+python manage.py makemigrations
 python manage.py migrate
 python manage.py runserver
 ```
