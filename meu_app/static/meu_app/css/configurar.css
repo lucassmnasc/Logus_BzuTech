@@ -212,7 +212,9 @@ input[type=range]::-moz-range-thumb {
   grid-column: 1 / -1;
 }
 
-.campo input {
+.campo input,
+.campo select,
+.campo textarea {
   height: 51px;
   padding: 0 16px;
   background: transparent;
@@ -222,14 +224,41 @@ input[type=range]::-moz-range-thumb {
   font: 500 16px 'Montserrat', sans-serif;
 }
 
-.campo input::placeholder {
-  color: #fff;
+.campo select option {
+  background: #0b0f19;
+}
+
+.campo textarea {
+  height: auto;
+  min-height: 130px;
+  padding: 14px 16px;
+  line-height: 1.55;
+  resize: vertical;
+  white-space: pre-wrap;
+}
+
+.lead-sub {
+  margin: -44px 0 40px;
+  font-size: 15px;
   opacity: 0.85;
 }
 
-.campo input:focus {
+.campo input::placeholder,
+.campo textarea::placeholder {
+  color: #fff;
+  opacity: 0.6;
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
   outline: 2px solid var(--lilas-claro);
   outline-offset: 1px;
+}
+
+.enviar:disabled {
+  opacity: 0.7;
+  cursor: progress;
 }
 
 .enviar {

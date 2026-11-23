@@ -7,19 +7,34 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;700&family=Montserrat:wght@200;300;400;500;600;700;800&display=swap">
-  <link rel="stylesheet" href="{% static 'meu_app/css/base.css' %}?v=3">
-  <link rel="stylesheet" href="{% static 'meu_app/css/chat.css' %}?v=1">
+  <link rel="stylesheet" href="{% static 'meu_app/css/base.css' %}?v=4">
+  <link rel="stylesheet" href="{% static 'meu_app/css/chat.css' %}?v=3">
   {% block css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
   <canvas id="bg" aria-hidden="true"></canvas>
+
+  <!-- Gradientes compartilhados pela logo LOGUS AI -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="logus-grad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#bb1dd4"/><stop offset="1" stop-color="#610f6e"/>
+      </linearGradient>
+      <linearGradient id="logus-grad-anel" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#4ef2df"/><stop offset=".55" stop-color="#e09ff1"/><stop offset="1" stop-color="#bb1dd4" stop-opacity=".2"/>
+      </linearGradient>
+      <radialGradient id="logus-halo">
+        <stop offset=".45" stop-color="#bb1dd4" stop-opacity=".55"/><stop offset="1" stop-color="#bb1dd4" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+  </svg>
 
   <header class="navbar">
     <a class="logo" href="{% url 'home' %}"><img src="{% static 'meu_app/img/bzu_tech_logo.png' %}" alt="Bzu Tech"></a>
     <nav class="nav-items" aria-label="Principal">
       <a href="{% url 'home' %}">SOBRE A BZU</a>
       <a href="{% url 'configurar' %}">SOLUÇÃO BZU</a>
-      <a href="{% url 'chat' %}">CONSULTOR IA</a>
+      <a href="{% url 'chat' %}">LOGUS AI</a>
       <a href="{% url 'resultado' %}">RESULTADOS</a>
       <a href="#">CASES</a>
       <a href="#">CONTATO</a>
@@ -29,13 +44,16 @@
 
   <main>{% block content %}{% endblock %}</main>
 
-  <!-- Widget Flutuante do Consultor de IA Bzu Tech -->
+  <!-- Widget flutuante LOGUS AI -->
   <div id="bzu-chat-widget">
-    <section id="bzu-chat-drawer" class="bzu-chat-drawer" aria-label="Consultor de IA Bzu Tech" hidden>
+    <section id="bzu-chat-drawer" class="bzu-chat-drawer" aria-label="LOGUS AI" aria-hidden="true" inert>
       <header class="bzu-chat-header">
         <div class="bzu-chat-header-info">
-          <strong>Consultor IA Bzu Tech</strong>
-          <small id="bzu-widget-modo">Dispositivos, Payback e ROI</small>
+          {% include 'meu_app/partials/logus_logo.html' with tamanho=38 classe='logo-widget' %}
+          <div>
+            <strong>LOGUS AI</strong>
+            <small id="bzu-widget-modo">Dispositivos, Payback e ROI</small>
+          </div>
         </div>
         <div class="bzu-chat-header-acoes">
           <a class="bzu-chat-icon-btn" href="{% url 'chat' %}" title="Abrir em tela cheia">Expandir</a>
@@ -43,34 +61,33 @@
         </div>
       </header>
 
-      <div class="bzu-chat-body" id="bzu-widget-mensagens" aria-live="polite">
+      <div class="bzu-chat-body chat-mensagens" id="bzu-widget-mensagens" aria-live="polite">
         <div class="msg msg-bot">
           <div class="msg-bolha">
-            <p>Olá! Posso analisar os dados da sua operação e indicar os <strong>dispositivos Bzu Tech</strong>, o <strong>Payback</strong> e o <strong>ROI</strong> para o investidor.</p>
+            <p>Olá! Sou a <strong>LOGUS AI</strong>. Descreva sua operação e eu indico os <strong>dispositivos Bzu Tech</strong>, o <strong>Payback</strong> e o <strong>ROI</strong> para o investidor.</p>
           </div>
         </div>
       </div>
 
       <div class="bzu-chat-chips" id="bzu-widget-chips">
         <button type="button" class="chip" data-prompt="Analise minha operação atual e mostre dispositivos sugeridos, payback e ROI.">Analisar minha operação</button>
-        <button type="button" class="chip" data-prompt="Quais dispositivos Bzu Tech devo usar?">Dispositivos sugeridos</button>
         <button type="button" class="chip" data-prompt="Qual o payback e ROI estimado para o investidor?">Payback e ROI</button>
       </div>
 
-      <form class="bzu-chat-footer" id="bzu-widget-form">
-        <input type="text" id="bzu-widget-input" placeholder="Descreva sua operação..." autocomplete="off" required>
-        <button type="submit">Enviar</button>
+      <form class="chat-form chat-form-widget" id="bzu-widget-form">
+        <textarea id="bzu-widget-input" rows="1" placeholder="Descreva como funciona sua operação..." data-max="140" required></textarea>
+        <button type="submit" class="chat-enviar" aria-label="Enviar">➤</button>
       </form>
     </section>
 
     <button type="button" id="bzu-chat-fab" class="bzu-chat-fab" aria-expanded="false" aria-controls="bzu-chat-drawer">
-      <span class="bzu-chat-dot" aria-hidden="true"></span>
-      Consultor IA
+      {% include 'meu_app/partials/logus_logo.html' with tamanho=28 classe='logo-fab' %}
+      LOGUS AI
     </button>
   </div>
 
-  <script src="{% static 'meu_app/js/base.js' %}?v=3"></script>
-  <script src="{% static 'meu_app/js/chat.js' %}?v=1"></script>
+  <script src="{% static 'meu_app/js/base.js' %}?v=4" defer></script>
+  <script src="{% static 'meu_app/js/chat.js' %}?v=3" defer></script>
   {% block js %}{% endblock %}
 </body>
 </html>

@@ -1,86 +1,118 @@
 {% extends 'meu_app/base.html' %}
-{% load static %}
-{% block title %}Bzu Tech | Consultor de IA{% endblock %}
+{% block title %}Bzu Tech | LOGUS AI{% endblock %}
 {% block body_class %}pagina-chat{% endblock %}
 
 {% block content %}
 <div class="container chat-page">
   <section class="chat-hero">
-    <div>
-      <span class="chat-badge" id="badge-modo-ia">Consultor IA Bzu Tech</span>
-      <h1 class="titulo">Analise sua operação com <span class="grad">IA</span><span class="ponto">.</span></h1>
-      <p class="subtitulo">Descreva sua operação para receber dispositivos recomendados, payback estimado e ROI para o investidor.</p>
+    <div class="chat-hero-marca">
+      {% include 'meu_app/partials/logus_logo.html' with tamanho=88 classe='logo-hero animar' %}
+      <div>
+        <span class="chat-badge" id="badge-modo-ia"><i class="pulso"></i>LOGUS AI · online</span>
+        <h1 class="titulo">Analise sua operação com a <span class="grad">LOGUS AI</span><span class="ponto">.</span></h1>
+        <p class="subtitulo">Descreva sua operação para receber dispositivos recomendados, payback e ROI para o investidor.</p>
+      </div>
     </div>
-    <a class="btn btn-outline chat-btn-simulador" href="{% url 'configurar' %}">Ir para o simulador &gt;</a>
   </section>
 
   <div class="chat-layout">
-    <!-- Coluna do Chat -->
-    <section class="chat-card glass" aria-label="Conversa com a IA">
+    <section class="chat-card glass" aria-label="Conversa com a LOGUS AI">
       <div class="chat-mensagens" id="chat-page-mensagens" aria-live="polite">
         <div class="msg msg-bot">
           <div class="msg-bolha">
-            <p>Olá! Sou o <strong>Consultor de IA da Bzu Tech</strong>. Conte como funciona sua operação (segmento, quantidade de máquinas/equipamentos, conta de energia ou forma atual de coleta) e eu calculo os <strong>dispositivos ideais</strong>, o <strong>Payback</strong> e o <strong>ROI em 12 meses</strong>.</p>
+            <p>Olá! Sou a <strong>LOGUS AI</strong>. Conte como funciona sua operação — pode escrever em vários parágrafos: segmento, turnos, quantidade de máquinas, conta de energia, como vocês coletam dados hoje e o principal problema.</p>
+            <p>Também é possível preencher os <strong>Dados da empresa</strong> ao lado para personalizar o relatório.</p>
           </div>
         </div>
       </div>
 
       <div class="chat-sugestoes" id="chat-page-sugestoes">
-        <button type="button" class="chip" data-prompt="Tenho um autocentro com 40 equipamentos, gasto R$ 15 mil de energia por mês e controlo em planilha manual. Quais dispositivos vocês recomendam e qual o ROI?">Autocentro (40 ativos + R$ 15k energia)</button>
-        <button type="button" class="chip" data-prompt="Opero uma indústria com 120 máquinas e sofro com paradas não planejadas. Qual o mix de sensores, payback e ROI?">Indústria (120 máquinas + paradas)</button>
-        <button type="button" class="chip" data-prompt="Quero monitorar uma frota de 60 veículos. Qual endpoint usar e em quanto tempo o investimento se paga?">Frota (60 veículos)</button>
+        <button type="button" class="chip chip-destaque" data-modelo="1">✎ Usar modelo de descrição</button>
+        <button type="button" class="chip" data-prompt="Tenho um autocentro com 40 equipamentos, funcionamos em horário comercial, gasto R$ 15 mil de energia por mês e controlo em planilha manual. Quais dispositivos vocês recomendam e qual o ROI?">Autocentro · 40 ativos</button>
+        <button type="button" class="chip" data-prompt="Opero uma indústria 24/7 com 120 máquinas e sofro com paradas não planejadas. Qual o mix de sensores, payback e ROI?">Indústria 24/7 · 120 máquinas</button>
         <button type="button" class="chip" data-prompt="Qual a diferença entre os endpoints EP111, EP300, EP400 e EP600?">Comparar endpoints</button>
       </div>
 
-      <form class="chat-form" id="chat-page-form">
-        <input
-          type="text"
+      <form class="chat-form chat-form-pagina" id="chat-page-form">
+        <textarea
           id="chat-page-input"
           name="mensagem"
-          placeholder="Ex.: Tenho 50 equipamentos, gasto R$ 18.000 de energia/mês e não coletamos dados..."
-          autocomplete="off"
+          rows="3"
+          data-max="260"
+          placeholder="Ex.: Somos um autocentro com 3 unidades e 45 equipamentos, funcionamos em dois turnos.&#10;Gastamos cerca de R$ 18 mil de energia por mês e hoje anotamos tudo em planilha.&#10;Nosso maior problema são compressores quebrando sem aviso."
           required
-        >
-        <button type="submit" class="btn btn-primary btn-sm">Enviar</button>
+        ></textarea>
+        <div class="chat-form-rodape">
+          <small><kbd>Enter</kbd> envia · <kbd>Shift</kbd> + <kbd>Enter</kbd> nova linha · <span id="chat-contador">0</span>/4000</small>
+          <button type="submit" class="btn btn-primary btn-sm chat-enviar-pagina">Enviar ➤</button>
+        </div>
       </form>
     </section>
 
-    <!-- Painel lateral ao vivo do Investidor -->
-    <aside class="chat-painel glass" aria-label="Resumo financeiro em tempo real">
-      <div class="painel-cabecalho">
-        <h2>Painel do Investidor</h2>
-        <span class="pacote-tag" id="painel-pacote">Business IoT</span>
-      </div>
-      <p class="painel-cenario" id="painel-cenario">Atualizado automaticamente conforme você conversa com a IA.</p>
+    <aside class="chat-lateral">
+      <details class="chat-painel glass perfil" {% if not simulacao or not simulacao.parametros.empresa %}open{% endif %}>
+        <summary><h2>Dados da empresa</h2><span class="perfil-nome" id="perfil-resumo">{{ simulacao.parametros.empresa|default:"Não preenchido" }}</span></summary>
+        <form id="form-perfil" class="perfil-form">
+          <label class="pf cheio">Empresa<input name="empresa" value="{{ simulacao.parametros.empresa|default:'' }}" placeholder="Nome da empresa" maxlength="150"></label>
+          <label class="pf">Responsável<input name="responsavel" value="{{ simulacao.parametros.responsavel|default:'' }}" placeholder="Seu nome" maxlength="150"></label>
+          <label class="pf">Cidade/UF<input name="cidade" value="{{ simulacao.parametros.cidade|default:'' }}" placeholder="Recife/PE" maxlength="80"></label>
+          <label class="pf cheio">Segmento
+            <select name="segmento">
+              <option value="" {% if not simulacao %}selected{% endif %}>Selecione o segmento...</option>
+              {% for k, rot in segmentos %}<option value="{{ k }}" {% if simulacao and k == simulacao.parametros.segmento %}selected{% endif %}>{{ rot }}</option>{% endfor %}
+            </select>
+          </label>
+          <label class="pf cheio">Modo de operação
+            <select name="modo_operacao">
+              <option value="" {% if not simulacao %}selected{% endif %}>Selecione o modo de operação...</option>
+              {% for k, rot in modos %}<option value="{{ k }}" {% if simulacao and k == simulacao.parametros.modo_operacao %}selected{% endif %}>{{ rot }}</option>{% endfor %}
+            </select>
+          </label>
+          <label class="pf cheio">Coleta de dados atual
+            <select name="coleta_atual">
+              <option value="" {% if not simulacao %}selected{% endif %}>Como coleta dados hoje...</option>
+              {% for k, rot in coletas %}<option value="{{ k }}" {% if simulacao and k == simulacao.parametros.coleta_atual %}selected{% endif %}>{{ rot }}</option>{% endfor %}
+            </select>
+          </label>
+          <label class="pf cheio">Equipamentos / pontos monitorados<input name="qtd_dispositivos" type="number" min="1" max="2000" value="{{ simulacao.parametros.qtd_dispositivos|default:'' }}" placeholder="Ex.: 40"></label>
+          <label class="pf">Energia/mês (R$)<input name="custo_energia_mensal" inputmode="decimal" value="{{ simulacao.parametros.custo_energia_mensal|default_if_none:'' }}" placeholder="Ex.: 15000"></label>
+          <label class="pf">Manutenção/mês (R$)<input name="custo_manutencao_mensal" inputmode="decimal" value="{{ simulacao.parametros.custo_manutencao_mensal|default_if_none:'' }}" placeholder="Ex.: 6000"></label>
+          <button type="submit" class="btn btn-primary btn-sm cheio">Aplicar à análise</button>
+        </form>
+      </details>
 
-      <div class="kpis-grid">
-        <div class="kpi">
-          <small>Economia anual</small>
-          <strong id="kpi-economia">--</strong>
+      <section class="chat-painel glass" aria-label="Resumo financeiro em tempo real">
+        <div class="painel-cabecalho">
+          <div>
+            <h2>Painel do Investidor</h2>
+            <span class="painel-empresa" id="painel-empresa">{{ simulacao.titulo_empresa|default:"Aguardando dados" }}</span>
+          </div>
+          <span class="pacote-tag" id="painel-pacote">{{ simulacao.pacote_recomendado|default:"--" }}</span>
         </div>
-        <div class="kpi">
-          <small>ROI em 12 meses</small>
-          <strong id="kpi-roi">--</strong>
-        </div>
-        <div class="kpi">
-          <small>Payback aproximado</small>
-          <strong id="kpi-payback">--</strong>
-        </div>
-        <div class="kpi">
-          <small>Investimento inicial</small>
-          <strong id="kpi-capex">--</strong>
-        </div>
-      </div>
+        <p class="painel-cenario" id="painel-cenario">{{ simulacao.subtitulo_cenario|default:"Informe os dados da sua operação no chat ou no formulário acima para gerar a análise." }}</p>
 
-      <div class="painel-dispositivos">
-        <h3>Dispositivos sugeridos</h3>
-        <div id="painel-lista-dispositivos" class="lista-disp"></div>
-      </div>
+        <div class="kpis-grid">
+          <div class="kpi"><small>Economia anual</small><strong id="kpi-economia">{{ simulacao.formatado.economia_anual|default:"R$ 0" }}</strong></div>
+          <div class="kpi"><small>ROI em 12 meses</small><strong id="kpi-roi">{{ simulacao.formatado.roi_12m|default:"0%" }}</strong></div>
+          <div class="kpi"><small>Payback</small><strong id="kpi-payback">{{ simulacao.formatado.payback|default:"0 meses" }}</strong></div>
+          <div class="kpi"><small>Investimento inicial</small><strong id="kpi-capex">{{ simulacao.formatado.investimento_inicial|default:"R$ 0" }}</strong></div>
+        </div>
 
-      <a class="btn btn-primary chat-ver-resultado" href="{% url 'resultado' %}">Ver relatório completo &gt;</a>
+        <div class="painel-dispositivos">
+          <h3>Dispositivos sugeridos</h3>
+          <div id="painel-lista-dispositivos" class="lista-disp">
+            <p class="lista-vazia">Nenhum dispositivo sugerido ainda. Envie as informações da sua operação para a LOGUS AI calcular.</p>
+          </div>
+        </div>
+
+        <div class="painel-acoes">
+          <button type="button" class="btn btn-primary btn-sm" id="btn-painel-pdf" data-baixar-pdf {% if not simulacao %}disabled{% endif %}>⬇ Baixar relatório PDF</button>
+          <a class="btn btn-ghost-sm{% if not simulacao %} desabilitado{% endif %}" id="btn-painel-resultado" href="{% url 'resultado' %}">Ver relatório completo &gt;</a>
+        </div>
+      </section>
     </aside>
   </div>
 </div>
 
-<script id="simulacao-inicial-data" type="application/json">{{ simulacao_inicial_json|safe }}</script>
+{{ simulacao|json_script:"simulacao-inicial-data" }}
 {% endblock %}
