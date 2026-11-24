@@ -15,6 +15,7 @@ import json
 import logging
 import os
 import re
+from collections import OrderedDict
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -26,7 +27,15 @@ from .roi_engine import analisar_operacao, formatar_brl
 logger = logging.getLogger(__name__)
 
 NOME_IA = "LOGUS AI"
-_TIMEOUT_MS = int(os.environ.get("GEMINI_TIMEOUT_MS", "20000"))
+_RE_EP = re.compile(r"\b(ep\s?111|ep\s?300|ep\s?400|ep\s?600)\b")
+_RE_SAUDACAO = re.compile(r"(oi|ol[áa]|bom dia|boa tarde|boa noite|e a[ií]|hello|hi)\b[\s,!.?]*(tudo bem)?[\s!.?]*")
+
+
+def _timeout_ms() -> int:
+    try:
+        return int(os.environ.get("GEMINI_TIMEOUT_MS", "20000"))
+    except ValueError:
+        return 20000
 
 
 @lru_cache(maxsize=1)
@@ -65,7 +74,7 @@ def _cliente_gemini():
     except ImportError:
         return None
     try:
-        return genai.Client(api_key=api_key, http_options=types.HttpOptions(timeout=_TIMEOUT_MS))
+        return genai.Client(api_key=api_key, http_options=types.HttpOptions(timeout=_timeout_ms()))
     except Exception:  # pragma: no cover - depende de rede/SDK
         logger.exception("Falha ao inicializar o cliente Gemini")
         return None
@@ -87,6 +96,21 @@ def _catalogo_json() -> str:
     return json.dumps(catalogo, ensure_ascii=False)
 
 
+def _config_extra(types) -> Dict[str, Any]:
+    """Gemini 2.5 Flash 'pensa' por padrão e consome max_output_tokens, cortando a resposta."""
+    if "flash" in _modelo():
+        return {"thinking_config": types.ThinkingConfig(thinking_budget=0)}
+    return {}
+
+
+def _texto_resposta(response) -> Optional[str]:
+    try:
+        texto = (response.text or "").strip()
+    except Exception:
+        return None
+    return texto or None
+
+
 def _simulacao_resumida(sim: Dict[str, Any]) -> str:
     """Envia ao modelo só o essencial (prompt menor = resposta mais rápida)."""
     resumo = {
@@ -103,8 +127,14 @@ def _simulacao_resumida(sim: Dict[str, Any]) -> str:
     return json.dumps(resumo, ensure_ascii=False)
 
 
-def _montar_system_prompt(simulacao: Dict[str, Any]) -> str:
+def _montar_system_prompt(simulacao: Dict[str, Any], tem_dados: bool = True) -> str:
     empresa = simulacao["parametros"].get("empresa") or "a empresa do usuário"
+    aviso = (
+        ""
+        if tem_dados
+        else "ATENÇÃO: o usuário ainda NÃO informou dados da operação. A simulação abaixo é um cenário "
+        "de referência; não a apresente como a operação dele. Peça os dados antes de citar números.\n\n"
+    )
     return (
         f"Você é a {NOME_IA}, assistente de inteligência artificial da Logus para a Bzu Tech "
         "(plataforma IoT para máxima eficiência operacional).\n"
@@ -117,7 +147,7 @@ def _montar_system_prompt(simulacao: Dict[str, Any]) -> str:
         "4. Deixe claro que são estimativas e podem ser refinadas com mais dados.\n"
         "5. Use Markdown simples (negrito e listas curtas). Seja conciso (até ~200 palavras).\n"
         "6. Se faltar um dado importante (conta de energia, nº de equipamentos, turnos), faça 1 pergunta curta no final.\n\n"
-        f"CATÁLOGO BZU TECH:\n{_catalogo_json()}\n\n"
+        f"{aviso}CATÁLOGO BZU TECH:\n{_catalogo_json()}\n\n"
         f"SIMULAÇÃO ATUAL (motor Python):\n{_simulacao_resumida(simulacao)}\n"
     )
 
@@ -126,6 +156,7 @@ def _chamar_gemini(
     mensagem: str,
     simulacao: Dict[str, Any],
     historico: Optional[List[Dict[str, str]]] = None,
+    tem_dados: bool = True,
 ) -> Optional[str]:
     client = _cliente_gemini()
     if client is None:
@@ -134,10 +165,18 @@ def _chamar_gemini(
 
     contents: List[Dict[str, Any]] = []
     for item in (historico or [])[-6:]:
+        if not isinstance(item, dict):
+            continue
         role = "model" if item.get("role") in ("assistant", "model", "bot") else "user"
         text = str(item.get("content") or item.get("text") or "").strip()[:2000]
-        if text:
+        if not text or (not contents and role == "model"):
+            continue
+        if contents and contents[-1]["role"] == role:
+            contents[-1]["parts"][0]["text"] += "\n\n" + text
+        else:
             contents.append({"role": role, "parts": [{"text": text}]})
+    if contents and contents[-1]["role"] == "user":
+        contents.pop()
     contents.append({"role": "user", "parts": [{"text": mensagem[:4000]}]})
 
     try:
@@ -145,18 +184,19 @@ def _chamar_gemini(
             model=_modelo(),
             contents=contents,
             config=types.GenerateContentConfig(
-                system_instruction=_montar_system_prompt(simulacao),
+                system_instruction=_montar_system_prompt(simulacao, tem_dados),
                 temperature=0.35,
                 max_output_tokens=900,
+                **_config_extra(types),
             ),
         )
-        return (getattr(response, "text", None) or "").strip() or None
+        return _texto_resposta(response)
     except Exception:
         logger.warning("Gemini indisponível; usando motor local.", exc_info=True)
         return None
 
 
-def _resposta_fallback_local(mensagem: str, simulacao: Dict[str, Any]) -> str:
+def _resposta_fallback_local(mensagem: str, simulacao: Dict[str, Any], tem_dados: bool = True) -> str:
     """Motor conversacional local (sem API externa)."""
     texto = mensagem.lower().strip()
     param = simulacao["parametros"]
@@ -167,10 +207,16 @@ def _resposta_fallback_local(mensagem: str, simulacao: Dict[str, Any]) -> str:
     titulo = f"{empresa} — {param['segmento_rotulo']}" if empresa else param["segmento_rotulo"]
 
     # 1. Pergunta sobre um endpoint específico
-    m_ep = re.search(r"\b(ep\s?111|ep\s?300|ep\s?400|ep\s?600)\b", texto)
+    m_ep = _RE_EP.search(texto)
     if m_ep and any(k in texto for k in ("o que", "qual", "sobre", "detalhe", "serve", "faz", "preço", "preco", "custo")):
         ep = DISPOSITIVOS_BZU[m_ep.group(1).replace(" ", "").upper()]
         apps = "\n".join(f"- {a}" for a in ep["aplicacoes"])
+        cenario = (
+            f"No cenário atual ({param['qtd_dispositivos']} dispositivos), o ROI em 12 meses é **{fmt['roi_12m']}** "
+            f"com payback de **{fmt['payback']}**."
+            if tem_dados
+            else "Me conte sobre sua operação para eu calcular o ROI e o payback com esse endpoint."
+        )
         return (
             f"**{ep['nome']}**\n\n{ep['resumo']}\n\n"
             f"- **Variáveis monitoradas:** {', '.join(ep['variaveis_monitoradas'])}\n"
@@ -178,9 +224,7 @@ def _resposta_fallback_local(mensagem: str, simulacao: Dict[str, Any]) -> str:
             f"{formatar_brl(ep['mensalidade_saas_brl'])}/mês (SaaS)\n"
             f"- **Redução média estimada:** ~{round(ep['reducao_energia_pct'])}% em energia e "
             f"~{round(ep['reducao_paradas_pct'])}% em paradas\n\n"
-            f"**Principais aplicações:**\n{apps}\n\n"
-            f"No cenário atual ({param['qtd_dispositivos']} dispositivos), o ROI em 12 meses é **{fmt['roi_12m']}** "
-            f"com payback de **{fmt['payback']}**."
+            f"**Principais aplicações:**\n{apps}\n\n{cenario}"
         )
 
     # 2. Comparação entre endpoints
@@ -193,7 +237,7 @@ def _resposta_fallback_local(mensagem: str, simulacao: Dict[str, Any]) -> str:
         return f"**Comparativo dos endpoints Bzu Tech**\n\n{linhas}\n\nQuer que eu indique o melhor mix para a sua operação?"
 
     # 3. Saudação
-    if re.fullmatch(r"(oi|ol[áa]|bom dia|boa tarde|boa noite|e a[ií]|hello|hi)[!.\s]*", texto):
+    if _RE_SAUDACAO.fullmatch(texto) or (not tem_dados and len(texto) < 25 and _RE_SAUDACAO.match(texto)):
         return (
             f"Olá! Sou a **{NOME_IA}**. Posso analisar sua operação e calcular:\n\n"
             "- **Dispositivos IoT sugeridos** (`EP111`, `EP300`, `EP400` e `EP600`)\n"
@@ -202,6 +246,9 @@ def _resposta_fallback_local(mensagem: str, simulacao: Dict[str, Any]) -> str:
             "Descreva como funciona sua operação — segmento, turnos, quantidade de equipamentos, "
             "conta de energia e como vocês coletam dados hoje."
         )
+
+    if not tem_dados:
+        titulo = f"Cenário de referência ({param['segmento_rotulo']})"
 
     # 4. Foco financeiro
     if any(k in texto for k in ("payback", "roi", "retorno", "investimento", "lucro", "quanto custa", "viabilidade")) and not any(
@@ -215,7 +262,11 @@ def _resposta_fallback_local(mensagem: str, simulacao: Dict[str, Any]) -> str:
             f"- **Economia estimada:** {fmt['economia_mensal']}/mês (**{fmt['economia_anual']}/ano**)\n"
             f"- **Payback aproximado:** **{fmt['payback']}** (~{fin['payback_meses']} meses)\n"
             f"- **ROI em 12 meses:** **{fmt['roi_12m']}** (lucro líquido de {fmt['lucro_liquido_12m']})\n\n"
-            "Informe seu **gasto mensal com energia** ou **manutenção** para deixar o cálculo mais preciso."
+            + (
+                "Informe seu **gasto mensal com energia** ou **manutenção** para deixar o cálculo mais preciso."
+                if tem_dados
+                else "*Valores ilustrativos.* Descreva sua operação para eu calcular os números reais."
+            )
         )
 
     # 5. Diagnóstico completo
@@ -227,6 +278,8 @@ def _resposta_fallback_local(mensagem: str, simulacao: Dict[str, Any]) -> str:
         if not param.get("custo_energia_mensal")
         else ""
     )
+    if not tem_dados:
+        dica = "\n\n*Valores ilustrativos.* Descreva sua operação (segmento, nº de equipamentos, conta de energia) para eu calcular os números reais."
     return (
         f"**Diagnóstico da Operação — {titulo}**\n"
         f"{param['qtd_dispositivos']} pontos monitorados · {param['modo_rotulo']} · "
@@ -272,15 +325,31 @@ def responder_chat(
     simulacao_calculo = analisar_operacao(contexto_atualizado)
     simulacao_retorno = simulacao_calculo if tem_dados else None
 
-    resposta = _chamar_gemini(mensagem, simulacao_calculo, historico)
+    resposta = _chamar_gemini(mensagem, simulacao_calculo, historico, tem_dados)
     if resposta:
         return resposta, simulacao_retorno, contexto_atualizado, "gemini"
-    return _resposta_fallback_local(mensagem, simulacao_calculo), simulacao_retorno, contexto_atualizado, "local"
+    resposta = _resposta_fallback_local(mensagem, simulacao_calculo, tem_dados)
+    return resposta, simulacao_retorno, contexto_atualizado, "local"
 
 
-@lru_cache(maxsize=128)
-def _analises_ia_cache(chave: str, simulacao_json: str) -> Optional[str]:
-    """Cache por parâmetros: a mesma simulação não gera nova chamada ao Gemini."""
+_CACHE_ANALISES: "OrderedDict[str, str]" = OrderedDict()
+_CACHE_MAX = 128
+
+
+def _analises_ia_cache(simulacao_json: str) -> Optional[str]:
+    """Cache por simulação; falhas não são cacheadas (a próxima chamada tenta de novo)."""
+    if simulacao_json in _CACHE_ANALISES:
+        _CACHE_ANALISES.move_to_end(simulacao_json)
+        return _CACHE_ANALISES[simulacao_json]
+    bruto = _gerar_analises(simulacao_json)
+    if bruto:
+        _CACHE_ANALISES[simulacao_json] = bruto
+        if len(_CACHE_ANALISES) > _CACHE_MAX:
+            _CACHE_ANALISES.popitem(last=False)
+    return bruto
+
+
+def _gerar_analises(simulacao_json: str) -> Optional[str]:
     client = _cliente_gemini()
     if client is None:
         return None
@@ -297,9 +366,14 @@ def _analises_ia_cache(chave: str, simulacao_json: str) -> Optional[str]:
         response = client.models.generate_content(
             model=_modelo(),
             contents=prompt,
-            config=types.GenerateContentConfig(response_mime_type="application/json", temperature=0.3),
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.3,
+                max_output_tokens=1200,
+                **_config_extra(types),
+            ),
         )
-        return (getattr(response, "text", None) or "").strip() or None
+        return _texto_resposta(response)
     except Exception:
         logger.warning("Gemini indisponível para enriquecer análises.", exc_info=True)
         return None
@@ -307,8 +381,7 @@ def _analises_ia_cache(chave: str, simulacao_json: str) -> Optional[str]:
 
 def enriquecer_analises_com_ia(simulacao: Dict[str, Any]) -> Dict[str, Any]:
     """Personaliza os 4 textos da tela /resultado/ com Gemini (mantendo os números)."""
-    sim_json = _simulacao_resumida(simulacao)
-    bruto = _analises_ia_cache(json.dumps(simulacao["parametros"], sort_keys=True, default=str), sim_json)
+    bruto = _analises_ia_cache(_simulacao_resumida(simulacao))
     if not bruto:
         return simulacao
     try:
