@@ -1,5 +1,5 @@
 """
-LOGUS AI — chatbot da Logus para a Bzu Tech (Google Gemini API + motor preditivo local).
+Bizu AI — chatbot inteligente da Bzu Tech (Google Gemini API + motor preditivo local).
 
 1. Extrai parâmetros operacionais da mensagem em linguagem natural;
 2. Calcula dispositivos, Payback e ROI de forma determinística via `roi_engine`;
@@ -27,15 +27,7 @@ from .roi_engine import analisar_operacao, formatar_brl
 logger = logging.getLogger(__name__)
 
 NOME_IA = "LOGUS AI"
-_RE_EP = re.compile(r"\b(ep\s?111|ep\s?300|ep\s?400|ep\s?600)\b")
-_RE_SAUDACAO = re.compile(r"(oi|ol[áa]|bom dia|boa tarde|boa noite|e a[ií]|hello|hi)\b[\s,!.?]*(tudo bem)?[\s!.?]*")
-
-
-def _timeout_ms() -> int:
-    try:
-        return int(os.environ.get("GEMINI_TIMEOUT_MS", "20000"))
-    except ValueError:
-        return 20000
+_TIMEOUT_MS = int(os.environ.get("GEMINI_TIMEOUT_MS", "20000"))
 
 
 @lru_cache(maxsize=1)
@@ -136,7 +128,7 @@ def _montar_system_prompt(simulacao: Dict[str, Any], tem_dados: bool = True) -> 
         "de referência; não a apresente como a operação dele. Peça os dados antes de citar números.\n\n"
     )
     return (
-        f"Você é a {NOME_IA}, assistente de inteligência artificial da Logus para a Bzu Tech "
+        f"Você é a {NOME_IA}, assistente de inteligência artificial da Bzu Tech "
         "(plataforma IoT para máxima eficiência operacional).\n"
         "Ajude empreendedores e investidores a analisar os dados da operação, recomendar os dispositivos "
         "IoT Bzu Tech ideais e explicar claramente o Payback e o ROI.\n\n"

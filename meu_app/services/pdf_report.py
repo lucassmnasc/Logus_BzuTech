@@ -1,4 +1,4 @@
-"""Geração do relatório PDF da LOGUS AI (ReportLab)."""
+"""Geração do relatório PDF da Bizu AI (ReportLab)."""
 
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ def nome_arquivo(simulacao: Dict[str, Any]) -> str:
     empresa = simulacao.get("parametros", {}).get("empresa") or "operacao"
     slug = unicodedata.normalize("NFKD", empresa).encode("ascii", "ignore").decode()
     slug = re.sub(r"[^A-Za-z0-9]+", "_", slug).strip("_") or "operacao"
-    return f"LOGUS_AI_Relatorio_{slug[:40]}.pdf"
+    return f"Bizu_AI_Relatorio_{slug[:40]}.pdf"
 
 
 def _estilos():
@@ -74,9 +74,9 @@ def _cabecalho_rodape(canvas, doc):
     canvas.circle(20 * mm, altura - 11 * mm, 5 * mm, fill=1, stroke=0)
     canvas.setFillColor(colors.white)
     canvas.setFont("Helvetica-Bold", 11)
-    canvas.drawCentredString(20 * mm, altura - 12.4 * mm, "L")
+    canvas.drawCentredString(20 * mm, altura - 12.4 * mm, "B")
     canvas.setFont("Helvetica-Bold", 14)
-    canvas.drawString(28 * mm, altura - 10 * mm, "LOGUS AI")
+    canvas.drawString(28 * mm, altura - 10 * mm, "Bizu AI")
     canvas.setFont("Helvetica", 8.5)
     canvas.setFillColor(LILAS)
     canvas.drawString(28 * mm, altura - 15 * mm, "Diagnóstico IoT · Bzu Tech")
@@ -141,7 +141,7 @@ def gerar_pdf(simulacao: Dict[str, Any]) -> bytes:
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer, pagesize=A4, leftMargin=15 * mm, rightMargin=15 * mm, topMargin=30 * mm, bottomMargin=18 * mm,
-        title=f"LOGUS AI — Relatório {empresa}", author="LOGUS AI · Bzu Tech",
+        title=f"Bizu AI — Relatório {empresa}", author="Bizu AI · Bzu Tech",
     )
     larg = A4[0] - 30 * mm
     h = []
@@ -223,7 +223,7 @@ def gerar_pdf(simulacao: Dict[str, Any]) -> bytes:
         h.append(KeepTogether([_grafico_fluxo(simulacao["fluxo_caixa"])]))
 
     # Análises
-    h.append(_p("Análise da LOGUS AI", est["h2"]))
+    h.append(_p("Análise da Bizu AI", est["h2"]))
     rotulos = {"economia": "Economia", "roi": "ROI", "payback": "Payback", "eficiencia": "Eficiência energética"}
     for chave, rot in rotulos.items():
         txt = simulacao.get("analises", {}).get(chave)

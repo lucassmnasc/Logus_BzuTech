@@ -1,53 +1,53 @@
 /* =========================================================
-   LOGUS AI — chat (página /chat/ + widget flutuante)
+   Bizu AI — chat (página /chat/ + widget flutuante)
    Animações apenas com transform/opacity (aceleradas pela GPU).
    ========================================================= */
 
-/* ---------- Logo LOGUS AI ---------- */
-.logus-logo {
+/* ---------- Logo Bizu AI ---------- */
+.bizu-logo {
   flex-shrink: 0;
   overflow: visible;
 }
 
-.logus-logo .ll-orbita {
+.bizu-logo .bl-orbita {
   transform-box: view-box;
   transform-origin: 32px 32px;
-  animation: ll-girar 14s linear infinite;
+  animation: bl-girar 14s linear infinite;
 }
 
-.logus-logo .ll-halo {
+.bizu-logo .bl-halo {
   transform-box: view-box;
   transform-origin: 32px 32px;
-  animation: ll-respirar 3.2s ease-in-out infinite;
+  animation: bl-respirar 3.2s ease-in-out infinite;
 }
 
-.logus-logo .ll-nucleo,
-.logus-logo .ll-ponto {
+.bizu-logo .bl-nucleo,
+.bizu-logo .bl-ponto {
   transform-box: fill-box;
   transform-origin: center;
 }
 
-.logus-logo .ll-letra {
-  stroke-dasharray: 34;
+.bizu-logo .bl-letra {
+  stroke-dasharray: 96;
 }
 
-.logus-logo .ll-anel {
+.bizu-logo .bl-anel {
   stroke-dasharray: 130;
 }
 
 /* animação de abertura (reaplicada ao abrir o chat) */
-.logus-logo.animar .ll-nucleo { animation: ll-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-.logus-logo.animar .ll-letra { animation: ll-desenhar 0.55s 0.25s ease-out both; }
-.logus-logo.animar .ll-anel { animation: ll-anel 0.9s 0.1s ease-out both; }
-.logus-logo.animar .ll-ponto { animation: ll-pop 0.45s 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-.logus-logo.animar .ll-halo { animation: ll-flash 1s ease-out both, ll-respirar 3.2s 1s ease-in-out infinite; }
+.bizu-logo.animar .bl-nucleo { animation: bl-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.bizu-logo.animar .bl-letra { animation: bl-desenhar 0.7s 0.2s ease-out both; }
+.bizu-logo.animar .bl-anel { animation: bl-anel 0.9s 0.1s ease-out both; }
+.bizu-logo.animar .bl-ponto { animation: bl-pop 0.45s 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.bizu-logo.animar .bl-halo { animation: bl-flash 1s ease-out both, bl-respirar 3.2s 1s ease-in-out infinite; }
 
-@keyframes ll-girar { to { transform: rotate(360deg); } }
-@keyframes ll-respirar { 0%, 100% { opacity: 0.55; transform: scale(0.94); } 50% { opacity: 0.95; transform: scale(1.04); } }
-@keyframes ll-pop { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-@keyframes ll-desenhar { from { stroke-dashoffset: 34; } to { stroke-dashoffset: 0; } }
-@keyframes ll-anel { from { stroke-dashoffset: 130; opacity: 0; } to { stroke-dashoffset: 0; opacity: 1; } }
-@keyframes ll-flash { 0% { opacity: 0; transform: scale(0.4); } 45% { opacity: 1; transform: scale(1.18); } 100% { opacity: 0.6; transform: scale(1); } }
+@keyframes bl-girar { to { transform: rotate(360deg); } }
+@keyframes bl-respirar { 0%, 100% { opacity: 0.55; transform: scale(0.94); } 50% { opacity: 0.95; transform: scale(1.04); } }
+@keyframes bl-pop { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes bl-desenhar { from { stroke-dashoffset: 96; } to { stroke-dashoffset: 0; } }
+@keyframes bl-anel { from { stroke-dashoffset: 130; opacity: 0; } to { stroke-dashoffset: 0; opacity: 1; } }
+@keyframes bl-flash { 0% { opacity: 0; transform: scale(0.4); } 45% { opacity: 1; transform: scale(1.18); } 100% { opacity: 0.6; transform: scale(1); } }
 
 /* ---------- Página /chat/ ---------- */
 .chat-page {
@@ -607,6 +607,6 @@ kbd {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .logus-logo *, .msg, .msg-bolha.revelar > *, .pulso, .pontos i { animation: none !important; }
+  .bizu-logo *, .msg, .msg-bolha.revelar > *, .pulso, .pontos i { animation: none !important; }
   .bzu-chat-drawer, .bzu-chat-drawer.aberto { transition: none; }
 }

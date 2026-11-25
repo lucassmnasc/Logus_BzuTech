@@ -1,4 +1,4 @@
-/* LOGUS AI — chat (página /chat/ e widget), estado da simulação e download do PDF. */
+/* Bizu AI — chat (página /chat/ e widget), estado da simulação e download do PDF. */
 (function () {
   'use strict';
 
@@ -61,7 +61,7 @@
         const raw = sessionStorage.getItem(CHAVE_SIM);
         if (raw) return JSON.parse(raw);
       } catch (_) {}
-      const el = document.getElementById('simulacao-inicial-data') || document.getElementById('resultado-simulacao-data');
+      const el = document.getElementById('simulacao-inicial-data');
       if (el) {
         try { return JSON.parse(el.textContent); } catch (_) {}
       }
@@ -70,7 +70,7 @@
     definir(sim) {
       if (!sim) return;
       try { sessionStorage.setItem(CHAVE_SIM, JSON.stringify(sim)); } catch (_) {}
-      window.dispatchEvent(new CustomEvent('logus:simulacao', { detail: sim }));
+      window.dispatchEvent(new CustomEvent('bizu:simulacao', { detail: sim }));
     },
   };
 
@@ -94,7 +94,7 @@
       if (!sim || !sim.parametros) { location.href = URL_PDF; return; }
       const { ok, dados, res } = await postJSON(URL_PDF, { parametros: sim.parametros, analises: sim.analises }, { blob: true });
       if (!ok) throw new Error('Falha ao gerar PDF');
-      const nome = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') || '')?.[1] || 'LOGUS_AI_Relatorio.pdf';
+      const nome = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') || '')?.[1] || 'Bizu_AI_Relatorio.pdf';
       const url = URL.createObjectURL(dados);
       const a = Object.assign(document.createElement('a'), { href: url, download: nome });
       document.body.appendChild(a);
@@ -176,7 +176,7 @@
     function digitando() {
       const wrap = document.createElement('div');
       wrap.className = 'msg msg-bot digitando';
-      wrap.innerHTML = '<div class="msg-bolha"><span class="pontos"><i></i><i></i><i></i></span>LOGUS AI está analisando...</div>';
+      wrap.innerHTML = '<div class="msg-bolha"><span class="pontos"><i></i><i></i><i></i></span>Bizu AI está analisando...</div>';
       lista.appendChild(wrap);
       rolar();
       return wrap;
@@ -242,7 +242,7 @@
     };
   }
 
-  const rotuloModo = (modo) => (modo === 'gemini' ? 'LOGUS AI · Gemini ativo' : 'LOGUS AI · motor preditivo');
+  const rotuloModo = (modo) => (modo === 'gemini' ? 'Bizu AI · Gemini ativo' : 'Bizu AI · motor preditivo');
 
   // ---------------------------------------------------------------- página /chat/
   const formPagina = document.getElementById('chat-page-form');
@@ -260,7 +260,6 @@
 
     const listaDisp = document.getElementById('painel-lista-dispositivos');
     const btnPdf = document.getElementById('btn-painel-pdf');
-    const btnResultado = document.getElementById('btn-painel-resultado');
 
     const zerarPainel = () => {
       setText('painel-empresa', 'Aguardando dados');
@@ -272,10 +271,9 @@
       setText('kpi-capex', 'R$ 0');
       setText('perfil-resumo', 'Não preenchido');
       if (listaDisp) {
-        listaDisp.innerHTML = '<p class="lista-vazia">Nenhum dispositivo sugerido ainda. Envie as informações da sua operação para a LOGUS AI calcular.</p>';
+        listaDisp.innerHTML = '<p class="lista-vazia">Nenhum dispositivo sugerido ainda. Envie as informações da sua operação para a Bizu AI calcular.</p>';
       }
       if (btnPdf) btnPdf.disabled = true;
-      if (btnResultado) btnResultado.classList.add('desabilitado');
     };
 
     const atualizarPainel = (sim) => {
@@ -297,10 +295,9 @@
           .join('');
       }
       if (btnPdf) btnPdf.disabled = false;
-      if (btnResultado) btnResultado.classList.remove('desabilitado');
     };
 
-    window.addEventListener('logus:simulacao', (e) => atualizarPainel(e.detail));
+    window.addEventListener('bizu:simulacao', (e) => atualizarPainel(e.detail));
     // Só preenche inicialmente se o servidor tiver uma simulação real já feita nesta sessão
     let simServidor = null;
     const elSim = document.getElementById('simulacao-inicial-data');
@@ -373,7 +370,7 @@
       fab.setAttribute('aria-expanded', String(abrir));
       if (abrir) {
         animarLogo(logoHeader);
-        animarLogo(fab.querySelector('.logus-logo'));
+        animarLogo(fab.querySelector('.bizu-logo'));
         setTimeout(() => input.focus({ preventScroll: true }), 220);
       }
     };
@@ -395,5 +392,5 @@
     });
   }
 
-  window.LogusAI = { estado, baixarPDF, escapeHtml, renderMarkdown, postJSON, animarLogo };
+  window.BizuAI = { estado, baixarPDF, escapeHtml, renderMarkdown, postJSON, animarLogo };
 })();

@@ -1,26 +1,26 @@
 {% extends 'meu_app/base.html' %}
-{% block title %}Bzu Tech | LOGUS AI{% endblock %}
+{% block title %}Bzu Tech | Bizu AI{% endblock %}
 {% block body_class %}pagina-chat{% endblock %}
 
 {% block content %}
 <div class="container chat-page">
   <section class="chat-hero">
     <div class="chat-hero-marca">
-      {% include 'meu_app/partials/logus_logo.html' with tamanho=88 classe='logo-hero animar' %}
+      {% include 'meu_app/partials/bizu_logo.html' with tamanho=88 classe='logo-hero animar' %}
       <div>
-        <span class="chat-badge" id="badge-modo-ia"><i class="pulso"></i>LOGUS AI · online</span>
-        <h1 class="titulo">Analise sua operação com a <span class="grad">LOGUS AI</span><span class="ponto">.</span></h1>
+        <span class="chat-badge" id="badge-modo-ia"><i class="pulso"></i>Bizu AI · online</span>
+        <h1 class="titulo">Analise sua operação com a <span class="grad">Bizu AI</span><span class="ponto">.</span></h1>
         <p class="subtitulo">Descreva sua operação para receber dispositivos recomendados, payback e ROI para o investidor.</p>
       </div>
     </div>
   </section>
 
   <div class="chat-layout">
-    <section class="chat-card glass" aria-label="Conversa com a LOGUS AI">
+    <section class="chat-card glass" aria-label="Conversa com a Bizu AI">
       <div class="chat-mensagens" id="chat-page-mensagens" aria-live="polite">
         <div class="msg msg-bot">
           <div class="msg-bolha">
-            <p>Olá! Sou a <strong>LOGUS AI</strong>. Conte como funciona sua operação — pode escrever em vários parágrafos: segmento, turnos, quantidade de máquinas, conta de energia, como vocês coletam dados hoje e o principal problema.</p>
+            <p>Olá! Sou a <strong>Bizu AI</strong>. Conte como funciona sua operação — pode escrever em vários parágrafos: segmento, turnos, quantidade de máquinas, conta de energia, como vocês coletam dados hoje e o principal problema.</p>
             <p>Também é possível preencher os <strong>Dados da empresa</strong> ao lado para personalizar o relatório.</p>
           </div>
         </div>
@@ -101,13 +101,12 @@
         <div class="painel-dispositivos">
           <h3>Dispositivos sugeridos</h3>
           <div id="painel-lista-dispositivos" class="lista-disp">
-            <p class="lista-vazia">Nenhum dispositivo sugerido ainda. Envie as informações da sua operação para a LOGUS AI calcular.</p>
+            <p class="lista-vazia">Nenhum dispositivo sugerido ainda. Envie as informações da sua operação para a Bizu AI calcular.</p>
           </div>
         </div>
 
         <div class="painel-acoes">
           <button type="button" class="btn btn-primary btn-sm" id="btn-painel-pdf" data-baixar-pdf {% if not simulacao %}disabled{% endif %}>⬇ Baixar relatório PDF</button>
-          <a class="btn btn-ghost-sm{% if not simulacao %} desabilitado{% endif %}" id="btn-painel-resultado" href="{% url 'resultado' %}">Ver relatório completo &gt;</a>
         </div>
       </section>
     </aside>

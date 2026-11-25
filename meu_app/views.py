@@ -1,4 +1,4 @@
-"""Views das páginas e APIs da LOGUS AI (simulação, chat e relatório PDF)."""
+"""Views das páginas e APIs da Bizu AI (simulação, chat e relatório PDF)."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from .models import MensagemChat, SimulacaoLead
 from .services.catalog import FATOR_COLETA, MODOS_OPERACAO, SEGMENTOS, listar_dispositivos
-from .services.chatbot import enriquecer_analises_com_ia, responder_chat
+from .services.chatbot import responder_chat
 from .services.roi_engine import analisar_operacao
 
 SESSAO_SIM = "bzu_ultima_simulacao"
@@ -85,15 +85,6 @@ def chat_page(request: HttpRequest):
     )
 
 
-def resultado_page(request: HttpRequest):
-    sim = _simulacao_sessao(request)
-    return render(
-        request,
-        "meu_app/resultado.html",
-        {"simulacao": sim, "simulacao_json": json.dumps(sim, ensure_ascii=False)},
-    )
-
-
 # ----------------------------------------------------------------- APIs
 
 
@@ -138,18 +129,6 @@ def api_simular(request: HttpRequest) -> JsonResponse:
         pass
 
     return JsonResponse(simulacao)
-
-
-@csrf_exempt
-@require_POST
-def api_analises_ia(request: HttpRequest) -> JsonResponse:
-    """Enriquece (em segundo plano no front-end) os textos da análise com Gemini."""
-    payload = _parse_json_body(request)
-    params = payload.get("parametros") if isinstance(payload.get("parametros"), dict) else payload
-    simulacao = enriquecer_analises_com_ia(analisar_operacao(params))
-    simulacao.setdefault("modo_ia", "local")
-    _salvar_sessao(request, simulacao)
-    return JsonResponse({"analises": simulacao["analises"], "modo_ia": simulacao["modo_ia"]})
 
 
 @csrf_exempt

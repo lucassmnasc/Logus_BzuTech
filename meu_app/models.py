@@ -36,7 +36,7 @@ class SimulacaoLead(models.Model):
 
 
 class MensagemChat(models.Model):
-    """Histórico opcional das conversas com a LOGUS AI."""
+    """Histórico opcional das conversas com a Bizu AI."""
 
     session_id = models.CharField(max_length=64, db_index=True)
     papel = models.CharField(max_length=20, choices=[("user", "Usuário"), ("assistant", "IA")])

@@ -40,13 +40,13 @@ try {
   }
 } catch (_) {}
 
-// envio: calcula a simulação no Django e segue para /resultado/
+// envio: calcula a simulação no Django e segue para /chat/
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const btn = form.querySelector('button[type="submit"]');
   const original = btn.innerHTML;
   btn.disabled = true;
-  btn.textContent = 'LOGUS AI calculando...';
+  btn.textContent = 'Bizu AI calculando...';
 
   const dados = Object.fromEntries(new FormData(form));
   dados.dispositivos = Number(qtd.value);
@@ -67,10 +67,10 @@ form.addEventListener('submit', async (e) => {
       try { sessionStorage.setItem('bzu_simulacao', JSON.stringify(sim)); } catch (_) {}
     }
   } catch (_) {
-    // em falha de rede, /resultado/ usa a última simulação da sessão do servidor
+    // em falha de rede, /chat/ usa a última simulação da sessão do servidor
   } finally {
     btn.disabled = false;
     btn.innerHTML = original;
-    location.href = document.getElementById('url-resultado').dataset.url;
+    location.href = document.getElementById('url-chat').dataset.url;
   }
 });

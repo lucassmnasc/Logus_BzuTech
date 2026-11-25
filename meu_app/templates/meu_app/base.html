@@ -8,22 +8,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;700&family=Montserrat:wght@200;300;400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="{% static 'meu_app/css/base.css' %}?v=4">
-  <link rel="stylesheet" href="{% static 'meu_app/css/chat.css' %}?v=3">
+  <link rel="stylesheet" href="{% static 'meu_app/css/chat.css' %}?v=4">
   {% block css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
   <canvas id="bg" aria-hidden="true"></canvas>
 
-  <!-- Gradientes compartilhados pela logo LOGUS AI -->
+  <!-- Gradientes compartilhados pela logo Bizu AI -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
-      <linearGradient id="logus-grad" x1="0" y1="0" x2="1" y2="1">
+      <linearGradient id="bizu-grad" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0" stop-color="#bb1dd4"/><stop offset="1" stop-color="#610f6e"/>
       </linearGradient>
-      <linearGradient id="logus-grad-anel" x1="0" y1="0" x2="1" y2="0">
+      <linearGradient id="bizu-grad-anel" x1="0" y1="0" x2="1" y2="0">
         <stop offset="0" stop-color="#4ef2df"/><stop offset=".55" stop-color="#e09ff1"/><stop offset="1" stop-color="#bb1dd4" stop-opacity=".2"/>
       </linearGradient>
-      <radialGradient id="logus-halo">
+      <radialGradient id="bizu-halo">
         <stop offset=".45" stop-color="#bb1dd4" stop-opacity=".55"/><stop offset="1" stop-color="#bb1dd4" stop-opacity="0"/>
       </radialGradient>
     </defs>
@@ -34,8 +34,7 @@
     <nav class="nav-items" aria-label="Principal">
       <a href="{% url 'home' %}">SOBRE A BZU</a>
       <a href="{% url 'configurar' %}">SOLUÇÃO BZU</a>
-      <a href="{% url 'chat' %}">LOGUS AI</a>
-      <a href="{% url 'resultado' %}">RESULTADOS</a>
+      <a href="{% url 'chat' %}">BIZU AI</a>
       <a href="#">CASES</a>
       <a href="#">CONTATO</a>
     </nav>
@@ -44,14 +43,14 @@
 
   <main>{% block content %}{% endblock %}</main>
 
-  <!-- Widget flutuante LOGUS AI -->
+  <!-- Widget flutuante Bizu AI -->
   <div id="bzu-chat-widget">
-    <section id="bzu-chat-drawer" class="bzu-chat-drawer" aria-label="LOGUS AI" aria-hidden="true" inert>
+    <section id="bzu-chat-drawer" class="bzu-chat-drawer" aria-label="Bizu AI" aria-hidden="true" inert>
       <header class="bzu-chat-header">
         <div class="bzu-chat-header-info">
-          {% include 'meu_app/partials/logus_logo.html' with tamanho=38 classe='logo-widget' %}
+          {% include 'meu_app/partials/bizu_logo.html' with tamanho=38 classe='logo-widget' %}
           <div>
-            <strong>LOGUS AI</strong>
+            <strong>Bizu AI</strong>
             <small id="bzu-widget-modo">Dispositivos, Payback e ROI</small>
           </div>
         </div>
@@ -64,7 +63,7 @@
       <div class="bzu-chat-body chat-mensagens" id="bzu-widget-mensagens" aria-live="polite">
         <div class="msg msg-bot">
           <div class="msg-bolha">
-            <p>Olá! Sou a <strong>LOGUS AI</strong>. Descreva sua operação e eu indico os <strong>dispositivos Bzu Tech</strong>, o <strong>Payback</strong> e o <strong>ROI</strong> para o investidor.</p>
+            <p>Olá! Sou a <strong>Bizu AI</strong>. Descreva sua operação e eu indico os <strong>dispositivos Bzu Tech</strong>, o <strong>Payback</strong> e o <strong>ROI</strong> para o investidor.</p>
           </div>
         </div>
       </div>
@@ -81,13 +80,13 @@
     </section>
 
     <button type="button" id="bzu-chat-fab" class="bzu-chat-fab" aria-expanded="false" aria-controls="bzu-chat-drawer">
-      {% include 'meu_app/partials/logus_logo.html' with tamanho=28 classe='logo-fab' %}
-      LOGUS AI
+      {% include 'meu_app/partials/bizu_logo.html' with tamanho=28 classe='logo-fab' %}
+      Bizu AI
     </button>
   </div>
 
   <script src="{% static 'meu_app/js/base.js' %}?v=4" defer></script>
-  <script src="{% static 'meu_app/js/chat.js' %}?v=3" defer></script>
+  <script src="{% static 'meu_app/js/chat.js' %}?v=4" defer></script>
   {% block js %}{% endblock %}
 </body>
 </html>
