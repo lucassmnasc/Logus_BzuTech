@@ -14,6 +14,7 @@ def tela(nome):
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", tela("home"), name="home"),
+    path("login/", views.login_page, name="login"),
     path("carregando/", tela("carregando"), name="carregando"),
     path("questionario/", tela("questionario"), name="questionario"),
     path("configurar/", views.configurar_page, name="configurar"),

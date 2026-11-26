@@ -6,9 +6,11 @@ import json
 import uuid
 from typing import Any, Dict
 
+from django.contrib.auth import authenticate, get_user_model, login as auth_login
 from django.db import DatabaseError
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
@@ -64,6 +66,41 @@ def _opcoes_formulario() -> Dict[str, Any]:
 
 
 # ----------------------------------------------------------------- páginas
+
+
+def login_page(request: HttpRequest) -> HttpResponse:
+    """Renderiza a página de login e autentica usuários por e-mail ou username."""
+    next_url = request.POST.get("next") or request.GET.get("next") or ""
+    contexto: Dict[str, Any] = {"next": next_url}
+
+    if request.method == "POST":
+        email = str(request.POST.get("email", "")).strip()
+        senha = str(request.POST.get("senha", ""))
+        contexto["email"] = email
+
+        user = None
+        if email and senha:
+            try:
+                User = get_user_model()
+                for candidato in User.objects.filter(email__iexact=email):
+                    user = authenticate(request, username=candidato.get_username(), password=senha)
+                    if user is not None:
+                        break
+                if user is None:
+                    user = authenticate(request, username=email, password=senha)
+            except DatabaseError:
+                contexto["erro"] = "Não foi possível validar as credenciais no momento."
+                return render(request, "meu_app/Login.html", contexto)
+
+        if user is not None:
+            auth_login(request, user)
+            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                return redirect(next_url)
+            return redirect("home")
+
+        contexto["erro"] = "E-mail ou senha inválidos."
+
+    return render(request, "meu_app/Login.html", contexto)
 
 
 def configurar_page(request: HttpRequest):

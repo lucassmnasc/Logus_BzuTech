@@ -1,5 +1,6 @@
 import json
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
@@ -111,3 +112,28 @@ class ApiViewsTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp["Content-Type"], "application/pdf")
         self.assertTrue(resp.content.startswith(b"%PDF"))
+
+
+class LoginViewTests(TestCase):
+    def test_home_exibe_opcoes_de_login(self):
+        resp = self.client.get(reverse("home"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Bzu Cloud")
+        self.assertContains(resp, f'href="{reverse("login")}">Simulador Cloud</a>')
+
+    def test_login_get_renderiza_template_e_css(self):
+        resp = self.client.get(reverse("login"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "meu_app/css/Login.css")
+        self.assertContains(resp, "Login Bzu Cloud")
+
+    def test_login_post_autentica_por_email(self):
+        User = get_user_model()
+        User.objects.create_user(username="usuario", email="usuario@bzu.com", password="segredo123")
+        resp = self.client.post(reverse("login"), {"email": "usuario@bzu.com", "senha": "segredo123"})
+        self.assertRedirects(resp, reverse("home"))
+
+    def test_login_post_invalido_exibe_erro(self):
+        resp = self.client.post(reverse("login"), {"email": "naoexiste@bzu.com", "senha": "errada"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "E-mail ou senha inválidos.")

@@ -82,12 +82,12 @@ p {
   font-weight: 700;
   font-size: 13.6px;
   letter-spacing: -0.34px;
-  color: var(--lilas);
+  color: var(#ffffff);
   white-space: nowrap;
 }
 
 .nav-items a:hover {
-  color: #f3d9fa;
+  color: #C04BDB;
 }
 
 .navbar .btn-sm {
@@ -205,4 +205,62 @@ body p,
   .nav-items {
     display: none;
   }
+}
+
+.login-menu {
+  position: relative;
+}
+
+.login-btn {
+  display: block;
+  color: #C04BDB;
+  cursor: pointer;
+  list-style: none;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  transition: color 0.3s ease;
+}
+
+.login-btn:hover {
+  color: #ffffff;
+}
+
+.login-submenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  display: none;
+  min-width: 180px;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  background: var(--nav);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.login-menu:hover > .login-submenu {
+  display: flex;
+}
+
+.login-submenu a,
+.login-submenu button {
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.login-submenu a:hover {
+  background: rgba(192, 75, 219, 0.2);
+}
+
+.login-submenu button:disabled {
+  color: rgba(255, 255, 255, 0.5);
 }
