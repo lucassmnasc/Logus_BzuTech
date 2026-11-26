@@ -26,16 +26,34 @@ body {
   flex: 1 1 50%;
   display: flex;
   align-items: center;
-  padding: 0 0 0 24%;
+  justify-content: flex-start;
+  padding: 0 clamp(32px, 7vw, 100px);
   color: #fff;
   background:
     radial-gradient(ellipse at 100% 100%, #86389a55 0%, transparent 55%),
     linear-gradient(200deg, #8a3a92 0%, #85378f 55%, #682873 100%);
 }
 
-.brand-content { max-width: 480px; margin-top: 4vh; }
+.brand-content {
+  display: flex;
+  width: min(100%, 480px);
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
 
-.logo { line-height: 1; margin-bottom: 14px; display: inline-block; position: relative; }
+.brand-content .logo {
+  display: block;
+  line-height: 1;
+  margin: 0 0 28px;
+}
+
+.brand-content .logo img {
+  display: block;
+  width: min(200px, 100%);
+  height: auto;
+}
+
 .logo-text {
   display: block;
   font-size: 98px;
@@ -56,15 +74,19 @@ body {
   letter-spacing: -1px;
 }
 
-.brand h1 {
+.brand-content h1 {
+  max-width: 430px;
+  margin: 0 0 24px;
+  padding: 0;
   font-size: 38px;
   line-height: 1.25;
   font-weight: 700;
   letter-spacing: -.5px;
-  margin-bottom: 28px;
+  text-align: left;
 }
 
-.brand p {
+.brand-content p {
+  max-width: 430px;
   font-size: 22px;
   line-height: 1.5;
   font-weight: 400;
@@ -81,6 +103,18 @@ body {
   justify-content: center;
   padding: 24px;
 }
+
+.btn-voltar {
+  margin-top: 24px;
+  padding: 10px 20px;
+  border: 1px solid #fff;
+  border-radius: 40px;
+  color: #fff;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.btn-voltar:hover { background: rgba(255, 255, 255, .12); }
 
 .card {
   width: 100%;
@@ -123,6 +157,7 @@ body {
   background: #fff;
   transition: border-color .15s, box-shadow .15s;
 }
+.field[hidden] { display: none; }
 .field:focus-within {
   border-color: var(--roxo);
   box-shadow: 0 0 0 3px rgba(138, 58, 146, .15);
@@ -154,8 +189,13 @@ body {
 }
 .toggle svg { width: 22px; height: 22px; }
 
+.form-actions {
+  display: flex;
+  gap: 12px;
+}
+
 .btn {
-  width: 100%;
+  flex: 1;
   height: 56px;
   margin-top: 12px;
   border: 0;
@@ -186,9 +226,8 @@ body {
 @media (max-width: 900px) {
   .page { flex-direction: column; }
   .brand { padding: 48px 28px; flex: none; }
-  .brand-content { margin-top: 0; }
-  .brand h1 { font-size: 30px; }
-  .brand p { font-size: 18px; }
+  .brand-content h1 { font-size: 30px; }
+  .brand-content p { font-size: 18px; }
   .login { padding: 32px 16px; }
   .card h2 { font-size: 30px; }
 }

@@ -126,6 +126,7 @@ class LoginViewTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "meu_app/css/Login.css")
         self.assertContains(resp, "Login Bzu Cloud")
+        self.assertContains(resp, 'id="nomeField" hidden')
 
     def test_login_post_autentica_por_email(self):
         User = get_user_model()
@@ -137,3 +138,74 @@ class LoginViewTests(TestCase):
         resp = self.client.post(reverse("login"), {"email": "naoexiste@bzu.com", "senha": "errada"})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "E-mail ou senha inválidos.")
+
+    def test_cadastro_cria_usuario_com_senha_protegida_e_autentica(self):
+        resp = self.client.post(
+            reverse("login"),
+            {"acao": "registrar", "nome": "Maria Silva", "email": "nova@bzu.com", "senha": "SenhaForte123!"},
+        )
+        self.assertRedirects(resp, reverse("home"))
+
+        user = get_user_model().objects.get(email="nova@bzu.com")
+        self.assertEqual(user.first_name, "Maria Silva")
+        self.assertTrue(user.check_password("SenhaForte123!"))
+        self.assertNotEqual(user.password, "SenhaForte123!")
+        self.assertIn("_auth_user_id", self.client.session)
+        self.assertContains(self.client.get(reverse("home")), "Maria Silva")
+        self.assertContains(self.client.get(reverse("perfil")), "nova@bzu.com")
+
+    def test_perfil_exige_login_e_exibe_dados(self):
+        response = self.client.get(reverse("perfil"))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response["Location"].startswith(reverse("login")))
+
+        user = get_user_model().objects.create_user(
+            username="maria", first_name="Maria Silva", email="maria@bzu.com", password="SenhaForte123!"
+        )
+        self.client.force_login(user)
+        response = self.client.get(reverse("perfil"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Maria Silva")
+        self.assertContains(response, "maria@bzu.com")
+        self.assertContains(response, "Sair")
+
+    def test_sair_desautentica_usuario(self):
+        user = get_user_model().objects.create_user(
+            username="maria", first_name="Maria Silva", email="maria@bzu.com", password="SenhaForte123!"
+        )
+        self.client.force_login(user)
+
+        response = self.client.post(reverse("logout"))
+        self.assertRedirects(response, reverse("home"))
+        self.assertNotIn("_auth_user_id", self.client.session)
+        self.assertContains(self.client.get(reverse("home")), "LOGIN")
+
+    def test_cadastro_recusa_email_duplicado(self):
+        User = get_user_model()
+        User.objects.create_user(username="existente", email="ja@bzu.com", password="SenhaForte123!")
+
+        resp = self.client.post(
+            reverse("login"),
+            {"acao": "registrar", "nome": "Outro Nome", "email": "JA@bzu.com", "senha": "OutraSenha123!"},
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Este e-mail já está cadastrado.")
+        self.assertEqual(User.objects.count(), 1)
+
+    def test_cadastro_recusa_senha_fraca(self):
+        resp = self.client.post(
+            reverse("login"),
+            {"acao": "registrar", "nome": "Maria Silva", "email": "nova@bzu.com", "senha": "123"},
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "password")
+        self.assertFalse(get_user_model().objects.filter(email="nova@bzu.com").exists())
+
+    def test_cadastro_exige_nome(self):
+        resp = self.client.post(
+            reverse("login"),
+            {"acao": "registrar", "email": "nova@bzu.com", "senha": "SenhaForte123!"},
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Informe um nome com até 150 caracteres.")
+        self.assertFalse(get_user_model().objects.filter(email="nova@bzu.com").exists())

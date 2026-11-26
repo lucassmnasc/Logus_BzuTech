@@ -6,8 +6,12 @@ import json
 import uuid
 from typing import Any, Dict
 
-from django.contrib.auth import authenticate, get_user_model, login as auth_login
-from django.db import DatabaseError
+from django.contrib.auth import authenticate, get_user_model, login as auth_login, logout as auth_logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from django.db import DatabaseError, IntegrityError
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -69,14 +73,45 @@ def _opcoes_formulario() -> Dict[str, Any]:
 
 
 def login_page(request: HttpRequest) -> HttpResponse:
-    """Renderiza a página de login e autentica usuários por e-mail ou username."""
+    """Autentica ou cadastra usuários usando e-mail e senha."""
     next_url = request.POST.get("next") or request.GET.get("next") or ""
-    contexto: Dict[str, Any] = {"next": next_url}
+    acao = request.POST.get("acao", "login")
+    contexto: Dict[str, Any] = {"next": next_url, "modo": acao}
 
     if request.method == "POST":
         email = str(request.POST.get("email", "")).strip()
         senha = str(request.POST.get("senha", ""))
         contexto["email"] = email
+
+        if acao == "registrar":
+            nome = str(request.POST.get("nome", "")).strip()
+            contexto["nome"] = nome
+            if not nome or len(nome) > 150:
+                contexto["erro"] = "Informe um nome com até 150 caracteres."
+                return render(request, "meu_app/Login.html", contexto)
+
+            User = get_user_model()
+            try:
+                validate_email(email)
+                validate_password(senha, user=User(username=email, email=email))
+                if User.objects.filter(email__iexact=email).exists():
+                    contexto["erro"] = "Este e-mail já está cadastrado."
+                    return render(request, "meu_app/Login.html", contexto)
+
+                user = User.objects.create_user(
+                    username=uuid.uuid4().hex, email=email, password=senha, first_name=nome
+                )
+                auth_login(request, user)
+                if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                    return redirect(next_url)
+                return redirect("home")
+            except ValidationError as error:
+                contexto["erro"] = " ".join(error.messages)
+            except IntegrityError:
+                contexto["erro"] = "Este e-mail já está cadastrado."
+            except DatabaseError:
+                contexto["erro"] = "Não foi possível criar a conta no momento."
+            return render(request, "meu_app/Login.html", contexto)
 
         user = None
         if email and senha:
@@ -101,6 +136,17 @@ def login_page(request: HttpRequest) -> HttpResponse:
         contexto["erro"] = "E-mail ou senha inválidos."
 
     return render(request, "meu_app/Login.html", contexto)
+
+
+@login_required(login_url="login")
+def perfil_page(request: HttpRequest) -> HttpResponse:
+    return render(request, "meu_app/perfil.html")
+
+
+@require_POST
+def logout_page(request: HttpRequest) -> HttpResponse:
+    auth_logout(request)
+    return redirect("home")
 
 
 def configurar_page(request: HttpRequest):

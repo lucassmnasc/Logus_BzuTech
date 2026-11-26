@@ -16,8 +16,7 @@
     <section class="brand">
       <div class="brand-content">
         <div class="logo">
-          <span class="logo-text">Bzu</span>
-          <span class="logo-tech">TECH</span>
+          <img src="{% static 'meu_app/img/logo-bzu-branca.svg' %}">
         </div>
 
         <h1>Olá, faça seu login<br>na Simulador Cloud</h1>
@@ -25,6 +24,7 @@
         <p>
           Sistema completo de <strong>monitoramento e gestão de equipamentos em tempo real.</strong>
         </p>
+        <a class="btn-voltar" href="{% url 'home' %}">Voltar para home</a>
       </div>
     </section>
 
@@ -33,11 +33,20 @@
       <form class="card" id="loginForm" method="post" action="{% url 'login' %}" autocomplete="on">
         {% csrf_token %}
         {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-        <h2>Login Simulador Cloud</h2>
+        <h2>{% if modo == "registrar" %}Criar conta{% else %}Login Simulador Cloud{% endif %}</h2>
 
         {% if erro %}
         <p class="form-erro" role="alert">{{ erro }}</p>
         {% endif %}
+
+        <label class="field" id="nomeField" {% if modo != "registrar" %}hidden{% endif %}>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/>
+          </svg>
+          <input type="text" id="nome" name="nome" placeholder="Nome" value="{{ nome|default:'' }}" maxlength="150"
+            {% if modo == "registrar" %}required{% else %}disabled{% endif %}>
+        </label>
 
         <label class="field">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -64,7 +73,10 @@
           </button>
         </label>
 
-        <button type="submit" class="btn" id="btnEntrar" disabled>Entrar</button>
+        <div class="form-actions">
+          <button type="submit" class="btn" name="acao" value="login" id="btnEntrar" disabled>Entrar</button>
+          <button type="submit" class="btn" name="acao" value="registrar" id="btnRegistrar" disabled>Criar conta</button>
+        </div>
       </form>
 
       <p class="forgot">Esqueceu a senha? <a href="#">Recuperar</a></p>
@@ -75,12 +87,26 @@
   <script>
     const email = document.getElementById('email');
     const senha = document.getElementById('senha');
-    const btn = document.getElementById('btnEntrar');
+    const nomeField = document.getElementById('nomeField');
+    const nome = document.getElementById('nome');
+    const botoes = document.querySelectorAll('.form-actions button');
     const toggle = document.getElementById('toggleSenha');
+
+    document.getElementById('btnRegistrar').addEventListener('click', () => {
+      nomeField.hidden = false;
+      nome.disabled = false;
+      nome.required = true;
+    });
+    document.getElementById('btnEntrar').addEventListener('click', () => {
+      nomeField.hidden = true;
+      nome.disabled = true;
+      nome.required = false;
+    });
 
     // Habilita o botão só quando os dois campos estão preenchidos
     function validar() {
-      btn.disabled = !(email.value.trim() && senha.value.trim());
+      const desabilitado = !(email.value.trim() && senha.value.trim());
+      botoes.forEach((botao) => { botao.disabled = desabilitado; });
     }
     email.addEventListener('input', validar);
     senha.addEventListener('input', validar);

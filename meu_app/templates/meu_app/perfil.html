@@ -1,0 +1,32 @@
+{% extends 'meu_app/base.html' %}
+{% load static %}
+{% block title %}Meu perfil | Bzu Tech{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'meu_app/css/perfil.css' %}">{% endblock %}
+
+{% block content %}
+<section class="perfil-container">
+  <section class="perfil-card glass">
+    <p class="perfil-eyebrow">SUA CONTA</p>
+    <h1>Meu perfil</h1>
+    <p class="perfil-intro">Confira os dados usados para acessar sua conta.</p>
+    <dl class="perfil-dados">
+      <div>
+        <dt>Nome</dt>
+        <dd>{% if user.first_name %}{{ user.first_name }}{% else %}Não informado{% endif %}</dd>
+      </div>
+      <div>
+        <dt>E-mail</dt>
+        <dd>{{ user.email|default:"Não informado" }}</dd>
+      </div>
+    </dl>
+
+    <div class="perfil-acoes">
+      <a class="btn btn-outline perfil-voltar" href="{% url 'home' %}">Voltar</a>
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button class="btn btn-primary btn-sm perfil-sair" type="submit">Sair</button>
+      </form>
+    </div>
+  </section>
+</section>
+{% endblock %}
