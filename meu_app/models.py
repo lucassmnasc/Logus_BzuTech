@@ -1,4 +1,15 @@
+from django.conf import settings
 from django.db import models
+
+
+class DadosConta(models.Model):
+    usuario = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="dados_conta"
+    )
+    nome_empresa = models.CharField(max_length=150)
+
+    def __str__(self) -> str:
+        return self.nome_empresa
 
 
 class SimulacaoLead(models.Model):

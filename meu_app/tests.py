@@ -120,13 +120,29 @@ class LoginViewTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Bzu Cloud")
         self.assertContains(resp, f'href="{reverse("login")}">Simulador Cloud</a>')
+        self.assertEqual(resp.content.decode().count(f'href="{reverse("login")}">Iniciar simulação</a>'), 2)
+
+    def test_iniciar_simulacao_leva_usuario_logado_ao_questionario(self):
+        user = get_user_model().objects.create_user(
+            username="maria", email="maria@bzu.com", password="SenhaForte123!"
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.content.decode().count(f'href="{reverse("questionario")}">Iniciar simulação</a>'), 2
+        )
 
     def test_login_get_renderiza_template_e_css(self):
         resp = self.client.get(reverse("login"))
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "meu_app/css/Login.css")
-        self.assertContains(resp, "Login Bzu Cloud")
-        self.assertContains(resp, 'id="nomeField" hidden')
+        self.assertContains(resp, "meu_app/css/login.css")
+        self.assertContains(resp, "Entrar")
+        self.assertContains(resp, f'href="{reverse("conta")}">Criar conta</a>')
+        self.assertContains(resp, 'name="email"')
+        self.assertContains(resp, 'name="senha"')
+        self.assertNotContains(resp, 'name="empresa"')
 
     def test_login_post_autentica_por_email(self):
         User = get_user_model()
@@ -139,20 +155,37 @@ class LoginViewTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "E-mail ou senha inválidos.")
 
-    def test_cadastro_cria_usuario_com_senha_protegida_e_autentica(self):
+    def test_conta_get_exibe_campos_e_estilos(self):
+        response = self.client.get(reverse("conta"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "meu_app/css/conta.css")
+        for field in ("nome", "email", "empresa", "senha", "confirmar_senha"):
+            self.assertContains(response, f'name="{field}"')
+
+    def test_cadastro_cria_usuario_e_salva_dados_da_conta(self):
         resp = self.client.post(
-            reverse("login"),
-            {"acao": "registrar", "nome": "Maria Silva", "email": "nova@bzu.com", "senha": "SenhaForte123!"},
+            reverse("conta"),
+            {
+                "nome": "Maria Silva",
+                "email": "nova@bzu.com",
+                "empresa": "Bzu Tech",
+                "senha": "SenhaForte123!",
+                "confirmar_senha": "SenhaForte123!",
+            },
         )
         self.assertRedirects(resp, reverse("home"))
 
         user = get_user_model().objects.get(email="nova@bzu.com")
+        dados_conta = user.dados_conta
         self.assertEqual(user.first_name, "Maria Silva")
+        self.assertEqual(dados_conta.nome_empresa, "Bzu Tech")
         self.assertTrue(user.check_password("SenhaForte123!"))
         self.assertNotEqual(user.password, "SenhaForte123!")
         self.assertIn("_auth_user_id", self.client.session)
         self.assertContains(self.client.get(reverse("home")), "Maria Silva")
-        self.assertContains(self.client.get(reverse("perfil")), "nova@bzu.com")
+        perfil = self.client.get(reverse("perfil"))
+        self.assertContains(perfil, "nova@bzu.com")
+        self.assertContains(perfil, "Bzu Tech")
 
     def test_perfil_exige_login_e_exibe_dados(self):
         response = self.client.get(reverse("perfil"))
@@ -185,8 +218,14 @@ class LoginViewTests(TestCase):
         User.objects.create_user(username="existente", email="ja@bzu.com", password="SenhaForte123!")
 
         resp = self.client.post(
-            reverse("login"),
-            {"acao": "registrar", "nome": "Outro Nome", "email": "JA@bzu.com", "senha": "OutraSenha123!"},
+            reverse("conta"),
+            {
+                "nome": "Outro Nome",
+                "email": "JA@bzu.com",
+                "empresa": "Outra empresa",
+                "senha": "OutraSenha123!",
+                "confirmar_senha": "OutraSenha123!",
+            },
         )
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Este e-mail já está cadastrado.")
@@ -194,18 +233,44 @@ class LoginViewTests(TestCase):
 
     def test_cadastro_recusa_senha_fraca(self):
         resp = self.client.post(
-            reverse("login"),
-            {"acao": "registrar", "nome": "Maria Silva", "email": "nova@bzu.com", "senha": "123"},
+            reverse("conta"),
+            {
+                "nome": "Maria Silva",
+                "email": "nova@bzu.com",
+                "empresa": "Bzu Tech",
+                "senha": "123",
+                "confirmar_senha": "123",
+            },
         )
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "password")
         self.assertFalse(get_user_model().objects.filter(email="nova@bzu.com").exists())
 
-    def test_cadastro_exige_nome(self):
+    def test_cadastro_exige_dados_completos(self):
         resp = self.client.post(
-            reverse("login"),
-            {"acao": "registrar", "email": "nova@bzu.com", "senha": "SenhaForte123!"},
+            reverse("conta"),
+            {
+                "email": "nova@bzu.com",
+                "empresa": "Bzu Tech",
+                "senha": "SenhaForte123!",
+                "confirmar_senha": "SenhaForte123!",
+            },
         )
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Informe um nome com até 150 caracteres.")
+        self.assertFalse(get_user_model().objects.filter(email="nova@bzu.com").exists())
+
+    def test_cadastro_recusa_senhas_diferentes(self):
+        response = self.client.post(
+            reverse("conta"),
+            {
+                "nome": "Maria Silva",
+                "email": "nova@bzu.com",
+                "empresa": "Bzu Tech",
+                "senha": "SenhaForte123!",
+                "confirmar_senha": "SenhaDiferente123!",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "As senhas não conferem.")
         self.assertFalse(get_user_model().objects.filter(email="nova@bzu.com").exists())

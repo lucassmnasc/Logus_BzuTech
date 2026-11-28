@@ -1,0 +1,67 @@
+{% extends 'meu_app/base.html' %}
+{% load static %}
+{% block title %}Criar conta | Bzu Tech{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'meu_app/css/perfil.css' %}">
+<link rel="stylesheet" href="{% static 'meu_app/css/login.css' %}">
+<link rel="stylesheet" href="{% static 'meu_app/css/conta.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="perfil-container">
+  <div class="perfil-card glass auth-card auth-card--conta">
+    <p class="perfil-eyebrow">SUA CONTA</p>
+    <h1>Criar conta</h1>
+    <p class="perfil-intro">Preencha seus dados para começar.</p>
+
+    {% if erro %}<p class="auth-error" role="alert">{{ erro }}</p>{% endif %}
+
+    <form class="auth-form auth-form--conta" id="contaForm" method="post" action="{% url 'conta' %}">
+      {% csrf_token %}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+      <label for="nome">Nome</label>
+      <input id="nome" type="text" name="nome" value="{{ nome|default:'' }}" maxlength="150" autocomplete="name" required>
+
+      <label for="email">E-mail</label>
+      <input id="email" type="email" name="email" value="{{ email|default:'' }}" autocomplete="email" required>
+
+      <label for="empresa">Nome da empresa</label>
+      <input id="empresa" type="text" name="empresa" value="{{ empresa|default:'' }}" maxlength="150" autocomplete="organization" required>
+
+      <label for="senha">Senha</label>
+      <input id="senha" type="password" name="senha" autocomplete="new-password" required>
+
+      <label for="confirmar_senha">Confirme sua senha</label>
+      <input id="confirmar_senha" type="password" name="confirmar_senha" autocomplete="new-password" required>
+
+      <button class="btn btn-primary btn-sm auth-submit" type="submit">Criar conta</button>
+    </form>
+
+    <p class="auth-links">Já tem uma conta? <a href="{% url 'login' %}">Entrar</a></p>
+  </div>
+</section>
+{% endblock %}
+
+{% block js %}
+<script>
+  const formConta = document.getElementById('contaForm');
+  const senha = document.getElementById('senha');
+  const confirmarSenha = document.getElementById('confirmar_senha');
+
+  function validarSenhas() {
+    confirmarSenha.setCustomValidity(
+      confirmarSenha.value && senha.value !== confirmarSenha.value ? 'As senhas não conferem.' : ''
+    );
+  }
+
+  senha.addEventListener('input', validarSenhas);
+  confirmarSenha.addEventListener('input', validarSenhas);
+  formConta.addEventListener('submit', (event) => {
+    validarSenhas();
+    if (!formConta.checkValidity()) {
+      event.preventDefault();
+      formConta.reportValidity();
+    }
+  });
+</script>
+{% endblock %}

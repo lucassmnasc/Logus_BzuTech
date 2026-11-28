@@ -8,7 +8,7 @@
   <h1>Teste sua economia com IoT antes de investir.</h1>
   <p>Simule de maneira personalizada e identifique onde a Bzu Tech pode trabalhar para otimizar sua operação.</p>
   <div class="hero-acoes">
-    <a class="btn btn-primary" href="{% url 'carregando' %}">Iniciar simulação</a>
+    <a class="btn btn-primary" href="{% if user.is_authenticated %}{% url 'questionario' %}{% else %}{% url 'login' %}{% endif %}">Iniciar simulação</a>
     <button class="btn btn-ghost" type="button" data-scroll="#passos">Veja como funciona</button>
   </div>
 </section>
@@ -26,7 +26,7 @@
   </div>
   <div class="cta">
     <h3>Experimente agora.</h3>
-    <a class="btn btn-primary" href="{% url 'carregando' %}">Iniciar simulação</a>
+    <a class="btn btn-primary" href="{% if user.is_authenticated %}{% url 'questionario' %}{% else %}{% url 'login' %}{% endif %}">Iniciar simulação</a>
   </div>
 </section>
 <div class="faixa"></div>

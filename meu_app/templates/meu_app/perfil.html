@@ -18,6 +18,10 @@
         <dt>E-mail</dt>
         <dd>{{ user.email|default:"Não informado" }}</dd>
       </div>
+      <div>
+        <dt>Nome da empresa</dt>
+        <dd>{% if dados_conta %}{{ dados_conta.nome_empresa }}{% else %}Não informado{% endif %}</dd>
+      </div>
     </dl>
 
     <div class="perfil-acoes">

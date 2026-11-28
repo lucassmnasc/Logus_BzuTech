@@ -1,0 +1,33 @@
+{% extends 'meu_app/base.html' %}
+{% load static %}
+{% block title %}Entrar | Bzu Tech{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'meu_app/css/perfil.css' %}">
+<link rel="stylesheet" href="{% static 'meu_app/css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="perfil-container">
+  <div class="perfil-card glass auth-card">
+    <p class="perfil-eyebrow">SUA CONTA</p>
+    <h1>Entrar</h1>
+    <p class="perfil-intro">Acesse sua conta com seu e-mail e senha.</p>
+
+    {% if erro %}<p class="auth-error" role="alert">{{ erro }}</p>{% endif %}
+
+    <form class="auth-form" method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+      <label for="email">E-mail</label>
+      <input id="email" type="email" name="email" value="{{ email|default:'' }}" autocomplete="email" required>
+
+      <label for="senha">Senha</label>
+      <input id="senha" type="password" name="senha" autocomplete="current-password" required>
+
+      <button class="btn btn-primary btn-sm auth-submit" type="submit">Entrar</button>
+    </form>
+
+    <p class="auth-links">Ainda não tem conta? <a href="{% url 'conta' %}">Criar conta</a></p>
+  </div>
+</section>
+{% endblock %}
