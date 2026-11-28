@@ -246,6 +246,7 @@ class LoginViewTests(TestCase):
         self.assertContains(resp, "password")
         self.assertFalse(get_user_model().objects.filter(email="nova@bzu.com").exists())
 
+
     def test_cadastro_exige_dados_completos(self):
         resp = self.client.post(
             reverse("conta"),
@@ -274,3 +275,16 @@ class LoginViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "As senhas não conferem.")
         self.assertFalse(get_user_model().objects.filter(email="nova@bzu.com").exists())
+
+
+class QuestionarioViewTests(TestCase):
+    def test_questionario_mostra_uma_pergunta_por_etapa(self):
+        response = self.client.get(reverse("questionario"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "2) Em qual segmento sua empresa atua?")
+        self.assertEqual(response.content.decode().count('class="opcao segmento"'), 12)
+        self.assertContains(response, 'id="pergunta-segmento" aria-labelledby="titulo-segmento" hidden')
+        self.assertContains(response, 'id="navegacao-2" hidden')
+        self.assertContains(response, 'id="proxima-pergunta" type="button" disabled')
+        self.assertContains(response, 'id="segmento-outro-texto"')
+        self.assertContains(response, 'id="finalizar-questionario"')
