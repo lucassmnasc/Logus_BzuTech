@@ -1,6 +1,14 @@
 from django.contrib import admin
 
-from .models import MensagemChat, SimulacaoLead
+from .models import MensagemChat, RespostaQuestionario, SimulacaoLead
+
+
+@admin.register(RespostaQuestionario)
+class RespostaQuestionarioAdmin(admin.ModelAdmin):
+    list_display = ("usuario", "setor_analisado", "porte", "funcionarios", "conta_energia_mensal", "criado_em")
+    list_filter = ("setor_analisado", "porte", "usa_iot", "conhece_iot")
+    search_fields = ("usuario__email", "usuario__first_name", "usuario__dados_conta__nome_empresa")
+    readonly_fields = ("criado_em",)
 
 
 @admin.register(SimulacaoLead)

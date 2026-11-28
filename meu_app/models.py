@@ -12,6 +12,49 @@ class DadosConta(models.Model):
         return self.nome_empresa
 
 
+class RespostaQuestionario(models.Model):
+    """Respostas do questionário do simulador (perguntas 2 a 19), uma linha por envio."""
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="questionarios"
+    )
+
+    # Bloco 1: perfil da empresa
+    segmentos = models.JSONField(default=list, blank=True)
+    segmento_outro = models.CharField(max_length=150, blank=True)
+    conhece_iot = models.CharField(max_length=20)
+    usa_iot = models.BooleanField(default=False)
+    uso_iot = models.CharField(max_length=20, blank=True)
+    porte = models.CharField(max_length=20)
+    unidades = models.CharField(max_length=20)
+
+    # Bloco 2: mapeamento da operação
+    dias_operacao = models.CharField(max_length=20)
+    horario_operacao = models.CharField(max_length=20)
+    horario_outro = models.CharField(max_length=150, blank=True)
+    setores = models.JSONField(default=list, blank=True)
+    setor_outro = models.TextField(blank=True)
+    situacoes = models.JSONField(default=list, blank=True)
+    situacao_outro = models.CharField(max_length=150, blank=True)
+    setor_analisado = models.CharField(max_length=20, db_index=True)
+
+    # Bloco 3: diagnóstico específico
+    funcionarios = models.CharField(max_length=20)
+    conta_energia_mensal = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    diagnostico = models.JSONField(default=dict, blank=True)
+
+    respostas = models.JSONField(default=dict, blank=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-criado_em"]
+        verbose_name = "Resposta do questionário"
+        verbose_name_plural = "Respostas do questionário"
+
+    def __str__(self) -> str:
+        return f"{self.usuario} — {self.setor_analisado} ({self.criado_em:%d/%m/%Y})"
+
+
 class SimulacaoLead(models.Model):
     """Armazena simulações de ROI/Payback e dados de contato do investidor."""
 

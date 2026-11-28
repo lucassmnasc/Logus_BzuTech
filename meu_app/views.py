@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import uuid
 from typing import Any, Dict
 
@@ -18,10 +19,13 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
-from .models import DadosConta, MensagemChat, SimulacaoLead
+from .models import DadosConta, MensagemChat, RespostaQuestionario, SimulacaoLead
 from .services.catalog import FATOR_COLETA, MODOS_OPERACAO, SEGMENTOS, listar_dispositivos
 from .services.chatbot import responder_chat
+from .services.questionario import RespostaInvalida, validar_questionario
 from .services.roi_engine import analisar_operacao
+
+logger = logging.getLogger(__name__)
 
 SESSAO_SIM = "bzu_ultima_simulacao"
 SESSAO_CTX = "bzu_contexto_operacao"
@@ -184,6 +188,27 @@ def chat_page(request: HttpRequest):
 
 
 # ----------------------------------------------------------------- APIs
+
+
+@require_POST
+def api_questionario(request: HttpRequest) -> JsonResponse:
+    """Salva as respostas do questionário do usuário logado. Recebe { respostas, setor_analisado }."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"erro": "Faça login para enviar o questionário."}, status=401)
+
+    payload = _parse_json_body(request)
+    try:
+        campos = validar_questionario(payload.get("respostas"), payload.get("setor_analisado"))
+    except RespostaInvalida as erro:
+        return JsonResponse({"erro": "Há respostas faltando ou inválidas.", "pergunta": str(erro)}, status=400)
+
+    try:
+        registro = RespostaQuestionario.objects.create(usuario=request.user, **campos)
+    except DatabaseError:
+        logger.exception("Falha ao salvar questionário do usuário %s", request.user.pk)
+        return JsonResponse({"erro": "Não foi possível salvar suas respostas no momento."}, status=503)
+
+    return JsonResponse({"id": registro.pk}, status=201)
 
 
 @require_GET
